@@ -136,7 +136,7 @@ if ($selectedCategory) {
 
                         <!-- Bouton de réservation -->
                         <?php if ($vehicle['disponibilite'] === 'Disponible'): ?>
-                            <a href="/app/action/vehicule/ficheTechnique.php?id=<?= $vehicle['id_vehicule'] ?>"
+                            <a href="../../app/action/vehicule/ficheTechnique.php?id=<?= $vehicle['id_vehicule'] ?>"
                                 class="block w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white text-center py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-blue-500/30">
                                 Voir les détails
                             </a>
