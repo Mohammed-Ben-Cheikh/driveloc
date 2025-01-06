@@ -245,17 +245,17 @@ if ($selectedCategory) {
 
                 if (data.status === 200 && data.data) {
                     const container = document.getElementById('vehiclesContainer');
-                    container.innerHTML = data.data.map(vehicle => `
+                    container.innerHTML = data.data.map(BATATA => `
                         <article class="group bg-white rounded-2xl shadow-lg overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
                             <div class="relative aspect-[16/10]">
-                                <img src="${vehicle.image_url}"
-                                    alt="${vehicle.nom}" 
+                                <img src="${BATATA.image_url}"
+                                    alt="${BATATA.nom}" 
                                     class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500">
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                 
                                 <div class="absolute top-4 right-4 z-10">
-                                    <span class="bg-gradient-to-r ${getStatusClass(vehicle.disponibilite)} text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg backdrop-blur-sm">
-                                        ${vehicle.disponibilite}
+                                    <span class="bg-gradient-to-r ${getStatusClass(BATATA.disponibilite)} text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg backdrop-blur-sm">
+                                        ${BATATA.disponibilite}
                                     </span>
                                 </div>
                             </div>
@@ -263,33 +263,33 @@ if ($selectedCategory) {
                             <div class="p-6">
                                 <div class="flex items-start justify-between mb-4">
                                     <h3 class="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                                        ${vehicle.nom}
+                                        ${BATATA.nom}
                                     </h3>
                                     <span class="flex items-center gap-1 text-gray-500 bg-gray-100 px-3 py-1 rounded-full text-sm">
-                                        ${vehicle.categorie.nom}
+                                        ${BATATA.categorie.nom}
                                     </span>
                                 </div>
 
                                 <p class="text-gray-600 mb-6 line-clamp-2">
-                                    ${vehicle.description || 'Aucune description disponible'}
+                                    ${BATATA.description || 'Aucune description disponible'}
                                 </p>
 
                                 <div class="flex items-center justify-between mb-6">
                                     <div class="flex flex-col">
                                         <span class="text-sm text-gray-500">Prix par jour</span>
                                         <span class="text-2xl font-bold text-blue-600">
-                                            ${vehicle.prix_formatte}
+                                            ${BATATA.prix_formatte}
                                         </span>
                                     </div>
                                 </div>
 
-                                ${vehicle.disponibilite === 'Disponible' 
+                                ${BATATA.disponibilite === 'Disponible' 
                                     ? `<div class="space-x-4 flex">
-                                        <a href="addCommand.php?id=${vehicle.id_vehicule}"
+                                        <a href="addCommand.php?id=${BATATA.id_vehicule}"
                                         class="block w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white text-center py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-blue-500/30">
                                         Réserver maintenant
                                        </a>
-                                       <a href="../../app/action/vehicule/ficheTechnique.php?id=${vehicle.id_vehicule}"
+                                       <a href="../../app/action/vehicule/ficheTechnique.php?id=${BATATA.id_vehicule}"
                                         class="block w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white text-center py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-blue-500/30">
                                         Voir les détails
                                        </a>
