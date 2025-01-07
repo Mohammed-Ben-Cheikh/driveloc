@@ -16,8 +16,10 @@
         "refusees",
         "reser",
         "statutreservation",
+        "stylec",
         "terminee",
         "vehicule",
         "vehicules"
-    ]
+    ],
+    "liveServer.settings.port": 5501
 }

@@ -112,19 +112,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </nav>
     <main>
         <section
-            class="relative overflow-hidden rounded-[2rem] bg-black/35 backdrop-blur-sm border-4 h-56 border-white shadow-2xl p-8 my-8">
-            <div class="absolute inset-0  mix-blend-overlay  p-2">
-                <img src="../img/herocar.jpg" alt="" class="w-full h-full rounded-3xl object-cover">
+            class="relative overflow-hidden rounded-[2rem] bg-black/35 backdrop-blur-sm border-4 h-56 border-white shadow-2xl my-8">
+            <!-- Background Image with Overlay -->
+            <div class="absolute inset-0 mix-blend-overlay p-2">
+                <img src="../img/herocar.jpg" alt="Blogging inspiration" class="w-full h-full rounded-3xl object-cover">
             </div>
-            <div class="relative z-10 flex flex-col justify-center items-center text-white p-8">
-                <h1 class="text-5xl font-bold mb-4 text-white">
-                    Mes Réservations
+
+            <!-- Content -->
+            <div class="relative z-10 flex flex-col justify-center items-center text-white p-7">
+                <!-- Main Heading -->
+                <h1 class="text-3xl md:text-5xl font-bold mb-4 text-white text-center">
+                    Share Your Story with the World
                 </h1>
-                <p class="text-xl text-gray-100 text-center">
-                    Gérez vos réservations de véhicules
+
+                <!-- Subheading -->
+                <p class="text-lg md:text-xl text-gray-100 text-center mb-8">
+                    Join our community of bloggers and inspire others with your words.
                 </p>
+
+                <!-- Call-to-Action Buttons -->
+                <div class="flex gap-4">
+                    <a href="#"
+                        class="px-6 py-2 bg-white text-black rounded-lg font-semibold hover:bg-gray-200 transition-colors">
+                        Start Writing
+                    </a>
+                    <a href="#"
+                        class="px-6 py-2 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-black transition-colors">
+                        Explore Blogs
+                    </a>
+                </div>
             </div>
         </section>
+
 
         <?php if (empty($reservations)): ?>
             <div class="bg-white/10 backdrop-blur-lg rounded-xl p-8 text-center">
@@ -137,7 +156,115 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </a>
             </div>
         <?php else: ?>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-hidden rounded-[2rem] bg-gradient-to-br from-gray-900 via-gray-800 to-blue-900 backdrop-blur-sm border-4 border-white shadow-2xl p-8 mt-8">
+            <div
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-hidden rounded-[2rem] bg-gradient-to-br from-gray-900 via-gray-800 to-blue-900 backdrop-blur-sm border-4 border-white shadow-2xl p-8 mt-8">
+                <!-- Carte 1 -->
+                <div
+                    class="bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden border border-white/10 hover:shadow-2xl transition-shadow duration-300">
+                    <!-- Image du blog -->
+                    <img src="https://via.placeholder.com/400x200" alt="Image du blog" class="w-full h-48 object-cover">
+
+                    <!-- Contenu de la carte -->
+                    <div class="p-6">
+                        <!-- Titre du blog -->
+                        <h3 class="text-xl font-bold text-white mb-2">Titre du Blog</h3>
+
+                        <!-- Auteur du blog -->
+                        <div class="flex items-center text-gray-400 mb-4">
+                            <i class="fas fa-user-circle mr-2"></i>
+                            <span>Par John Doe</span>
+                        </div>
+
+                        <!-- Description courte -->
+                        <p class="text-gray-300 mb-4">
+                            Ceci est une courte description du blog. Elle donne un aperçu du contenu de l'article.
+                        </p>
+
+                        <!-- Date de publication -->
+                        <div class="flex items-center text-gray-400 mb-4">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            <span>12 Octobre 2023</span>
+                        </div>
+
+                        <!-- Bouton "Lire l'article" -->
+                        <a href="#"
+                            class="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            Lire l'article
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Carte 2 -->
+                <div
+                    class="bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden border border-white/10 hover:shadow-2xl transition-shadow duration-300">
+                    <!-- Image du blog -->
+                    <img src="https://via.placeholder.com/400x200" alt="Image du blog" class="w-full h-48 object-cover">
+
+                    <!-- Contenu de la carte -->
+                    <div class="p-6">
+                        <!-- Titre du blog -->
+                        <h3 class="text-xl font-bold text-white mb-2">Titre du Blog</h3>
+
+                        <!-- Auteur du blog -->
+                        <div class="flex items-center text-gray-400 mb-4">
+                            <i class="fas fa-user-circle mr-2"></i>
+                            <span>Par Jane Smith</span>
+                        </div>
+
+                        <!-- Description courte -->
+                        <p class="text-gray-300 mb-4">
+                            Ceci est une courte description du blog. Elle donne un aperçu du contenu de l'article.
+                        </p>
+
+                        <!-- Date de publication -->
+                        <div class="flex items-center text-gray-400 mb-4">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            <span>10 Octobre 2023</span>
+                        </div>
+
+                        <!-- Bouton "Lire l'article" -->
+                        <a href="#"
+                            class="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            Lire l'article
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Carte 3 -->
+                <div
+                    class="bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden border border-white/10 hover:shadow-2xl transition-shadow duration-300">
+                    <!-- Image du blog -->
+                    <img src="https://via.placeholder.com/400x200" alt="Image du blog" class="w-full h-48 object-cover">
+
+                    <!-- Contenu de la carte -->
+                    <div class="p-6">
+                        <!-- Titre du blog -->
+                        <h3 class="text-xl font-bold text-white mb-2">Titre du Blog</h3>
+
+                        <!-- Auteur du blog -->
+                        <div class="flex items-center text-gray-400 mb-4">
+                            <i class="fas fa-user-circle mr-2"></i>
+                            <span>Par Alex Johnson</span>
+                        </div>
+
+                        <!-- Description courte -->
+                        <p class="text-gray-300 mb-4">
+                            Ceci est une courte description du blog. Elle donne un aperçu du contenu de l'article.
+                        </p>
+
+                        <!-- Date de publication -->
+                        <div class="flex items-center text-gray-400 mb-4">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            <span>8 Octobre 2023</span>
+                        </div>
+
+                        <!-- Bouton "Lire l'article" -->
+                        <a href="#"
+                            class="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            Lire l'article
+                        </a>
+                    </div>
+                </div>
                 <?php foreach ($reservations as $reservation):
                     $vehicule = Vehicule::getById($reservation['id_vehicule_fk']);
                     ?>

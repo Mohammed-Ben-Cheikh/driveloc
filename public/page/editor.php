@@ -1,35 +1,9 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || !$_SESSION['user_id']) {
-    header("Location: ../../index.php");
-    exit();
-}
-
-require_once "../../app/controller/reservations.php";
-require_once "../../app/controller/vehicules.php";
-require_once "../../app/helpers/functions.php"; // Add this line
-
-// Get user's reservations
-$user_id = $_SESSION['user_id'];
-$reservations = Reservation::getByUser($user_id);
-
-// Handle cancellation
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
-    $id_reservation = $_POST['id_reservation'] ?? '';
-
-    if ($action === 'cancel') {
-        try {
-            if (Reservation::updateStatut($id_reservation, 'annulée')) {
-                $success = "Votre réservation a été annulée avec succès.";
-                header("Refresh:0"); // Refresh the page
-            } else {
-                $error = "Erreur lors de l'annulation de la réservation.";
-            }
-        } catch (Exception $e) {
-            $error = "Erreur : " . $e->getMessage();
-        }
-    }
+if (isset($_SESSION['admin_id']) && $_SESSION['admin_id']) {
+    header("Location: ../dashboard");
+} else if (!isset($_SESSION['user_id']) && !$_SESSION['user_id']) {
+    header("Location: ../index.php");
 }
 ?>
 <!DOCTYPE html>
@@ -38,13 +12,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mes Réservations - Drive-Loc</title>
+    <title>Éditeur de Texte</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.6/quill.snow.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com/"></script>
-    <link rel="stylesheet" href="../../src/output.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/stylec.css">
 </head>
 
-<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-blue-900 flex-col p-4">
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-blue-900 flex-col p-4 space-y-8">
     <nav
         class="relative bg-gradient-to-r from-blue-400 to-blue-600 rounded-[2rem] border-gray-200 shadow-2xl border-4 border-white/20 backdrop-blur-sm">
         <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
@@ -61,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </a>
             </div>
             <div class="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-                <a href="../../authentification/logout.php"
+                <a href="../authentification/logout.php"
                     class="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-gray-100 m-2">Logout</a>
                 <button data-collapse-toggle="navbar-user" type="button"
                     class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-white rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
@@ -111,149 +86,231 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </nav>
     <main>
-        <section
-            class="relative overflow-hidden rounded-[2rem] bg-black/35 backdrop-blur-sm border-4 h-56 border-white shadow-2xl p-8 my-8">
-            <div class="absolute inset-0  mix-blend-overlay  p-2">
-                <img src="../img/herocar.jpg" alt="" class="w-full h-full rounded-3xl object-cover">
+        <div id="loading"
+            class="fixed top-0 left-0 w-full h-full bg-white bg-opacity-80 flex items-center justify-center z-50"
+            style="display: none;">
+            <div class="text-xl">Chargement...</div>
+        </div>
+        <!-- Preview Panel -->
+        <div id="previewPanel" class="preview-panel">
+            <div class="preview-content">
+                <div class="flex justify-between mb-4">
+                    <h2 class="text-2xl">Aperçu</h2>
+                    <button class="wp-button" onclick="closePreview()">
+                        <i class="fas fa-times"></i> Fermer
+                    </button>
+                </div>
+                <div class="w-[100%] p-3">
+                    <div id="previewContent" class="break-words"></div>
+                </div>
             </div>
-            <div class="relative z-10 flex flex-col justify-center items-center text-white p-8">
-                <h1 class="text-5xl font-bold mb-4 text-white">
-                    Mes Réservations
-                </h1>
-                <p class="text-xl text-gray-100 text-center">
-                    Gérez vos réservations de véhicules
-                </p>
-            </div>
-        </section>
+        </div>
+        <div class="flex flex-col md:flex-row">
+            <!-- Main Content -->
+            <div class="m-auto w-full">
 
-        <?php if (empty($reservations)): ?>
-            <div class="bg-white/10 backdrop-blur-lg rounded-xl p-8 text-center">
-                <i class="fas fa-calendar-xmark text-4xl text-gray-400 mb-4"></i>
-                <h2 class="text-xl font-semibold text-white mb-2">Aucune réservation</h2>
-                <p class="text-gray-400 mb-4">Vous n'avez pas encore de réservation active.</p>
-                <a href="vehicules.php"
-                    class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-                    Découvrir nos véhicules
-                </a>
+                <!-- Toolbar -->
+                <div class="wp-toolbar mb-8 flex flex-wrap gap-2">
+                    <button class="wp-button" id="saveButton">
+                        <i class="fas fa-save"></i> Enregistrer
+                    </button>
+                    <button class="wp-button" id="previewButton">
+                        <i class="fas fa-eye"></i> Aperçu
+                    </button>
+                    <button class="wp-button" id="exportButton">
+                        <i class="fas fa-download"></i> Exporter
+                    </button>
+                </div>
+
+                <label for="postImg" class="bg-white p-3 rounded-xl text-2xl">L'Image</label>
+                <input type="file" class="w-full h-16 text-3xl mb-4 bg-white p-2" placeholder="Ajouter un Img"
+                    id="postImg">
+                <label for="postTitle" class="bg-white p-3 rounded-xl text-2xl">Le Titre</label>
+                <input type="text" class="w-full h-16 text-3xl mb-4 p-2" placeholder="Ajouter un titre" id="postTitle">
+                <!-- Editor -->
+                <label for="editor" class="bg-white p-3 rounded-xl text-2xl">Le Body</label>
+                <div class="w-full bg-white">
+                    <div id="editor" class="w-full h-screen"></div>
+                </div>
             </div>
-        <?php else: ?>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-hidden rounded-[2rem] bg-gradient-to-br from-gray-900 via-gray-800 to-blue-900 backdrop-blur-sm border-4 border-white shadow-2xl p-8 mt-8">
-                <?php foreach ($reservations as $reservation):
-                    $vehicule = Vehicule::getById($reservation['id_vehicule_fk']);
-                    ?>
-                    <div class="bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden border border-white/10">
-                        <!-- Vehicle Image -->
-                        <div class="relative h-48">
-                            <img src="<?php echo $vehicule['image_url']; ?>"
-                                alt="<?php echo $vehicule['marque'] . ' ' . $vehicule['modele']; ?>"
-                                class="w-full h-full object-cover">
-                            <div class="absolute top-4 right-4">
-                                <span
-                                    class="px-4 py-2 rounded-full text-sm font-semibold <?php echo getStatusClass($reservation['statut']); ?>">
-                                    <?php echo getStatusLabel($reservation['statut']); ?>
-                                </span>
+        </div>
+        <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/quill-image-resize-module@3.0.0/image-resize.min.js"></script>
+        <script>
+            // Notification function
+            function showNotification(message, type = 'success') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+
+            // Loading function
+            function showLoading(show) {
+                document.getElementById('loading').style.display = show ? 'flex' : 'none';
+            }
+
+            // Preview functions
+            function showPreview() {
+                const previewPanel = document.getElementById('previewPanel');
+                const previewContent = document.getElementById('previewContent');
+                const title = document.getElementById('postTitle').value;
+                const content = quill.root.innerHTML;
+
+                previewContent.innerHTML = `
+                    <h1 class="text-4xl mb-6">${title}</h1>
+                    ${content}
+                `;
+                previewPanel.style.display = 'block';
+            }
+
+            function closePreview() {
+                document.getElementById('previewPanel').style.display = 'none';
+            }
+
+            // Initialize Quill editor
+            let quill = null;
+            try {
+                quill = new Quill('#editor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            // Options de mise en forme des en-têtes
+                            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+
+                            // Options de mise en forme du texte
+                            ['bold', 'italic', 'underline', 'strike'], // Gras, Italique, Souligné, Barré
+
+                            // Options de couleur et de fond
+                            [{ 'color': [] }, { 'background': [] }], // Sélection des couleurs et des arrière-plans
+
+                            // Listes et indentations
+                            [{ 'list': 'ordered' }, { 'list': 'bullet' }], // Listes ordonnées et non ordonnées
+                            [{ 'indent': '-1' }, { 'indent': '+1' }], // Réduction et augmentation des indentations
+
+                            // Alignement du texte
+                            [{ 'align': [] }], // Alignements (gauche, centre, droite, justifié)
+
+                            // Insertion de liens, images et vidéos
+                            ['link', 'image', 'video'], // Ajouter des liens hypertextes, des images, ou des vidéos
+
+                            // Styles supplémentaires
+                            ['blockquote', 'code-block'], // Citation et bloc de code
+
+                            // Réinitialisation de la mise en forme
+                            ['clean'], // Supprime tous les styles appliqués
+
+                            // Options personnalisées supplémentaires
+                            [{ 'font': [] }], // Choix de la police
+                            [{ 'size': ['small', false, 'large', 'huge'] }], // Choix de la taille du texte
+
+                            // Subscript et superscript
+                            [{ 'script': 'sub' }, { 'script': 'super' }], // Indices et exposants
+                        ],
+                        imageResize: {
+                            displaySize: true
+                        },
+                    },
+                    placeholder: 'Écrivez votre article ici...',
+                });
+            } catch (error) {
+                console.error('Erreur lors de l\'initialisation de Quill:', error);
+                showNotification('Erreur lors du chargement de l\'éditeur', 'error');
+            }
+
+            // Save function
+            document.getElementById('saveButton').addEventListener('click', function () {
+                showLoading(true);
+                try {
+                    const title = document.getElementById('postTitle').value;
+                    const content = quill.root.innerHTML;
+                    showNotification('Article sauvegardé avec succès');
+                } catch (error) {
+                    console.error('Erreur lors de la sauvegarde:', error);
+                    showNotification('Erreur lors de la sauvegarde', 'error');
+                } finally {
+                    showLoading(false);
+                }
+            });
+
+            // Preview button handler
+            document.getElementById('previewButton').addEventListener('click', showPreview);
+
+            // Export function
+            document.getElementById('exportButton').addEventListener('click', function () {
+                try {
+                    const title = document.getElementById('postTitle').value;
+                    const content = quill.root.innerHTML;
+
+                    const blob = new Blob([`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>${title}</title>
+                            <meta charset="UTF-8">
+                            <style>
+                                body { max-width: 800px; margin: 0 auto; padding: 20px; }
+                                h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+                                div { margin-bottom: 1rem; }
+                                img { max-width: 100%; }
+                                video { max-width: 100%; }
+                                iframe { max-width: 100%; }
+                                code { background-color: #f5f5f5; padding: 8px; border-radius: 4px; }
+                                pre { background-color: #f5f5f5; padding: 8px; border-radius: 4px; }
+                                blockquote { background-color: #f9f9f9; padding: 8px; border-left: 4px solid #ccc; }
+                            </style>
+                        </head>
+                        <body>
+                            <h1>${title}</h1>
+                            <div style="overflow-wrap: break-word; max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+                            ${content}
                             </div>
-                        </div>
+                        </body>
+                        </html>
+                    `], { type: 'text/html' });
 
-                        <!-- Reservation Details -->
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold text-white mb-2">
-                                <?php echo $vehicule['marque'] . ' ' . $vehicule['modele']; ?>
-                            </h3>
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${title || 'article'}.html`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } catch (error) {
+                    console.error('Erreur lors de l\'export:', error);
+                    showNotification('Erreur lors de l\'export', 'error');
+                }
+            });
 
-                            <div class="space-y-3 text-gray-300">
-                                <div class="flex items-center">
-                                    <i class="fas fa-calendar-alt w-6"></i>
-                                    <span>Du: <?php echo date('d/m/Y', strtotime($reservation['date_reservation'])); ?></span>
-                                </div>
-                                <div class="flex items-center">
-                                    <i class="fas fa-calendar-check w-6"></i>
-                                    <span>Au: <?php echo date('d/m/Y', strtotime($reservation['date_limite'])); ?></span>
-                                </div>
-                                <div class="flex items-center">
-                                    <i class="fas fa-map-marker-alt w-6"></i>
-                                    <span><?php echo $reservation['lieux']; ?></span>
-                                </div>
-                                <div class="flex items-center">
-                                    <i class="fas fa-money-bill w-6"></i>
-                                    <span><?php echo $vehicule['prix_a_loue']; ?> €/jour</span>
-                                </div>
-                            </div>
-
-                            <?php if ($reservation['commentaire']): ?>
-                                <div class="mt-4 p-4 bg-gray-800/50 rounded-lg">
-                                    <p class="text-gray-400 text-sm italic">
-                                        "<?php echo $reservation['commentaire']; ?>"
-                                    </p>
-                                </div>
-                            <?php endif; ?>
-
-                            <!-- Status Timeline -->
-                            <div class="mt-6 relative">
-                                <div class="flex justify-between mb-2">
-                                    <?php
-                                    $statuses = ['en attente', 'approuvée', 'terminée'];
-                                    $currentIndex = array_search($reservation['statut'], $statuses);
-
-                                    foreach ($statuses as $index => $status):
-                                        $isActive = $index <= $currentIndex;
-                                        ?>
-                                        <div class="flex flex-col items-center">
-                                            <div
-                                                class="w-6 h-6 rounded-full <?php echo $isActive ? 'bg-blue-500' : 'bg-gray-600'; ?> flex items-center justify-center">
-                                                <i class="fas fa-check text-white text-xs"></i>
-                                            </div>
-                                            <span class="text-xs text-gray-400 mt-1"><?php echo ucfirst($status); ?></span>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                                <div class="absolute top-3 left-0 right-0 h-[2px] bg-gray-600 -z-10">
-                                    <div class="h-full bg-blue-500" style="width: <?php echo ($currentIndex / 2) * 100; ?>%">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Actions -->
-                            <?php if ($reservation['statut'] === 'en attente' || $reservation['statut'] === 'approuvée'): ?>
-                                <div class="mt-6 flex gap-2">
-                                    <form method="POST" class="w-full"
-                                        onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ?');">
-                                        <input type="hidden" name="id_reservation"
-                                            value="<?php echo $reservation['id_reservation']; ?>">
-                                        <input type="hidden" name="action" value="cancel">
-                                        <button type="submit"
-                                            class="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
-                                            <i class="fas fa-times"></i>
-                                            Annuler
-                                        </button>
-                                    </form>
-                                    <?php if ($reservation['statut'] === 'approuvée'): ?>
-                                        <a href="facture.php?id=<?php echo $reservation['id_reservation']; ?>"
-                                            class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
-                                            <i class="fas fa-file-invoice"></i>
-                                            Facture
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+            // Handle visibility change
+            document.getElementById('postVisibility').addEventListener('change', function (e) {
+                const passwordSection = document.getElementById('passwordProtection');
+                passwordSection.style.display = e.target.value === 'password' ? 'block' : 'none';
+            });
+        </script>
     </main>
     <footer class="bg-gradient-to-t from-blue-400 to-blue-600 rounded-[2rem] shadow-2xl border-4 border-white/20 mt-8">
         <div class="mx-auto w-full max-w-screen-xl p-4 py-6 lg:py-8">
             <div class="md:flex md:justify-between">
                 <div
-                    class="flex justify-center items-center rounded-[33px] w-44 h-10 bg-[#e0e0e0] [box-shadow:inset_15px_15px_33px_#bebebe,_inset_-15px_-15px_33px_#ffffff]">
-                    <a href="index.html" class="flex items-center space-x-3 rtl:space-x-reverse">
-                        <img src="../img/logo.png" class="rounded-lg" alt="Logo" />
+                    class="flex justify-center items-center rounded-lg w-44 h-10 bg-[#e0e0e0] [box-shadow:inset_15px_15px_33px_#bebebe,_inset_-15px_-15px_33px_#ffffff]">
+                    <a href="index.php" class="flex items-center space-x-3 rtl:space-x-reverse">
+                        <div class="relative group">
+                            <div
+                                class="absolute -inset-1 bg-gradient-to-r from-gray-600 to-gray-400 rounded-[2rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
+                            </div>
+                            <img src="../img/logo.png" alt="Chef"
+                                class="rounded-lg shadow-2xl transform group-hover:scale-[1.02] transition-all duration-500 relative">
+                        </div>
                     </a>
                 </div>
                 <div class="grid grid-cols-2 gap-8 sm:gap-6 sm:grid-cols-3">
                     <div>
-                        <h2 class="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">Resources</h2>
+                        <h2 class="mb-6 text-sm font-semibold text-gray-900 uppercase ">Resources</h2>
                         <ul class="text-white dark:text-gray-400 font-medium">
                             <li class="mb-4">
                                 <a href="https://flowbite.com/" class="hover:underline">Flowbite</a>
@@ -264,7 +321,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </ul>
                     </div>
                     <div>
-                        <h2 class="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">Follow us</h2>
+                        <h2 class="mb-6 text-sm font-semibold text-gray-900 uppercase ">Follow us</h2>
                         <ul class="text-white dark:text-gray-400 font-medium">
                             <li class="mb-4">
                                 <a href="https://github.com/themesberg/flowbite" class="hover:underline ">Github</a>
@@ -275,7 +332,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </ul>
                     </div>
                     <div>
-                        <h2 class="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">Legal</h2>
+                        <h2 class="mb-6 text-sm font-semibold text-gray-900 uppercase ">Legal</h2>
                         <ul class="text-white dark:text-gray-400 font-medium">
                             <li class="mb-4">
                                 <a href="#" class="hover:underline">Privacy Policy</a>
@@ -313,7 +370,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <a href="#" class="text-white hover:text-gray-900 dark:hover:text-white ms-5">
                         <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                             viewBox="0 0 20 17">
-                            <path
+                            <path fill-rule="evenodd"
                                 d="M20 1.892a8.178 8.178 0 0 1-2.355.635 4.074 4.074 0 0 0 1.8-2.235 8.344 8.344 0 0 1-2.605.98A4.13 4.13 0 0 0 13.85 0a4.068 4.068 0 0 0-4.1 4.038 4 4 0 0 0 .105.919A11.705 11.705 0 0 1 1.4.734a4.006 4.006 0 0 0 1.268 5.392 4.165 4.165 0 0 1-1.859-.5v.05A4.057 4.057 0 0 0 4.1 9.635a4.19 4.19 0 0 1-1.856.07 4.108 4.108 0 0 0 3.831 2.807A8.36 8.36 0 0 1 0 14.184 11.732 11.732 0 0 0 6.291 16 11.502 11.502 0 0 0 17.964 4.5c0-.177 0-.35-.012-.523A8.143 8.143 0 0 0 20 1.892Z"
                                 clip-rule="evenodd" />
                         </svg>
@@ -341,25 +398,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </footer>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const toggleButton = document.querySelector("[data-collapse-toggle='navbar-user']");
-            const navbarMenu = document.getElementById("navbar-user");
-            toggleButton.addEventListener("click", () => {
-                navbarMenu.classList.toggle("hidden");
-            });
-            const userMenuButton = document.getElementById("user-menu-button");
-            const userDropdown = document.getElementById("user-dropdown");
-            userMenuButton.addEventListener("click", () => {
-                userDropdown.classList.toggle("hidden");
-            });
-            window.addEventListener("click", (e) => {
-                if (!userMenuButton.contains(e.target) && !userDropdown.contains(e.target)) {
-                    userDropdown.classList.add("hidden");
-                }
-            });
-        });
-    </script>
 </body>
 
 </html>

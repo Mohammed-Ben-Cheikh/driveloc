@@ -50,7 +50,7 @@ if (isset($_SESSION['admin_id']) && $_SESSION['admin_id']) {
             </div>
             <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-user">
                 <ul
-                    class="flex flex-col justify-center items-center font-medium p-4 rounded-lg w-full md:w-[38rem] md:h-10 md:p-0 mt-4 border border-gray-100 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 bg-white">
+                    class="flex flex-col justify-center items-center font-medium p-4 rounded-lg w-full md:w-[44rem] md:h-10 md:p-0 mt-4 border border-gray-100 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 bg-white">
                     <li>
                         <a href="index.php"
                             class="block py-2 px-3 text-white bg-blue-600 rounded md:bg-transparent md:text-blue-600 md:p-0">Home</a>
@@ -66,6 +66,10 @@ if (isset($_SESSION['admin_id']) && $_SESSION['admin_id']) {
                     <li>
                         <a href="./page/reservation.php"
                             class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-600 md:p-0 ">Reservation</a>
+                    </li>
+                    <li>
+                        <a href="./page/blogger.php"
+                            class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-600 md:p-0 ">Blogger</a>
                     </li>
                     <li>
                         <a href="./page/users.php"

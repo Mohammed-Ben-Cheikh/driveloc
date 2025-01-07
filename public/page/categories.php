@@ -8,26 +8,24 @@ if (isset($_SESSION['admin_id']) && $_SESSION['admin_id']) {
 require_once '../../app/controller/vehicules.php';
 require_once '../../app/controller/categories.php';
 
-
-$vehicles = Vehicule::getAll();
-
-$page;
-
-// Ensure the page parameter is valid and default to 1 if not provided
-if (isset($_GET['page'])) {
-    $page = $_GET['page'];
-    // return $page;
-} else if (!isset($_GET['page'])) {
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($page < 1) {
     $page = 1;
-    // return $page;
 }
 
-$totalRows = Categorie::NbCategories();
-$rowsPerPage = 4;
-$totalPages = ceil($totalRows / $rowsPerPage);
-$categories = Categorie::GetCategories($rowsPerPage, $Page = 1);
+$lignes = 4;
 
+$totalRows = Categorie::NbCategories();
+
+$totalPages = ceil($totalRows / $lignes);
+
+if ($page > $totalPages) {
+    $page = $totalPages;
+}
+
+$categories = Categorie::GetCategories($lignes, $page);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -72,7 +70,7 @@ $categories = Categorie::GetCategories($rowsPerPage, $Page = 1);
             </div>
             <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-user">
                 <ul
-                    class="flex flex-col justify-center items-center font-medium p-4 rounded-lg w-full md:w-[38rem] md:h-10 md:p-0 mt-4 border border-gray-100 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 bg-white">
+                    class="flex flex-col justify-center items-center font-medium p-4 rounded-lg w-full md:w-[44rem] md:h-10 md:p-0 mt-4 border border-gray-100 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 bg-white">
                     <li>
                         <a href="../index.php"
                             class="block py-2 px-3 text-white bg-blue-600 rounded md:bg-transparent md:text-blue-600 md:p-0">Home</a>
@@ -90,6 +88,10 @@ $categories = Categorie::GetCategories($rowsPerPage, $Page = 1);
                             class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-600 md:p-0 ">Reservation</a>
                     </li>
                     <li>
+                        <a href="blogger.php"
+                            class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-600 md:p-0 ">Blogger</a>
+                    </li>
+                    <li>
                         <a href="users.php"
                             class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-600 md:p-0 ">Espace
                             client</a>
@@ -105,7 +107,7 @@ $categories = Categorie::GetCategories($rowsPerPage, $Page = 1);
     <main>
         <!-- Hero Section -->
         <section
-            class="relative overflow-hidden rounded-[2rem] bg-black/35 backdrop-blur-sm border-4 border-white shadow-2xl p-8 mt-8">
+            class="relative overflow-hidden rounded-[2rem] bg-black/35 backdrop-blur-sm border-4 h-56 border-white shadow-2xl p-8 mt-8">
             <div class="absolute inset-0  mix-blend-overlay  p-2">
                 <img src="../img/herocar.jpg" alt="" class="w-full h-full rounded-3xl object-cover">
             </div>
@@ -130,25 +132,15 @@ $categories = Categorie::GetCategories($rowsPerPage, $Page = 1);
                 </div>
             <?php else: ?>
                 <?php foreach ($categories as $category): ?>
-                    <div
-                        class="group relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-gray-900 to-gray-800 shadow-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-blue-500/25">
-                        <!-- Image avec overlay -->
+                    <div class="group relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-gray-900 to-gray-800 shadow-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-blue-500/25">
                         <div class="relative h-64">
-                            <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent z-10">
-                            </div>
-                            <img src="../../Dashboard/<?php echo htmlspecialchars($category['image_url'] ?: 'img/default-category.jpg'); ?>"
-                                class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
-                                alt="<?php echo htmlspecialchars($category['nom']); ?>">
+                            <div class="absolute inset-0 bg-gradient-to-t from-gray-900 transform group-hover:scale-110 transition-transform duration-700 via-transparent to-transparent z-10"></div>
+                            <img src="../../Dashboard/<?php echo htmlspecialchars($category['image_url'] ?: 'img/default-category.jpg'); ?>" class="absolute w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" alt="<?php echo htmlspecialchars($category['nom']); ?>">
                         </div>
-
-                        <!-- Contenu -->
                         <div class="relative z-50 p-6 -mt-20">
                             <div class="flex justify-between items-start mb-4">
-                                <h3 class="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors">
-                                    <?php echo htmlspecialchars($category['nom']); ?>
-                                </h3>
-                                <span
-                                    class="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600/20 text-blue-400 backdrop-blur-sm">
+                                <h3 class="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors"><?php echo htmlspecialchars($category['nom']); ?></h3>
+                                <span class="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600/20 text-blue-400 backdrop-blur-sm">
                                     <i class="fas fa-car text-sm"></i>
                                     <?php
                                     $vehicleCount = Vehicule::countByCategory($category['id_categorie']);
@@ -156,109 +148,89 @@ $categories = Categorie::GetCategories($rowsPerPage, $Page = 1);
                                     ?>
                                 </span>
                             </div>
-
-                            <p class="text-gray-400 mb-6 line-clamp-2">
-                                <?php echo htmlspecialchars($category['description']); ?>
-                            </p>
-
+                            <p class="text-gray-400 mb-6 line-clamp-2"><?php echo htmlspecialchars($category['description']); ?></p>
                             <div class="flex justify-between items-center">
                                 <span class="text-gray-500 flex items-center gap-2">
                                     <i class="fas fa-calendar-alt"></i>
                                     <?php echo date('d/m/Y', strtotime($category['created_at'])); ?>
                                 </span>
-                                <a href="vehicule.php?category=<?php echo $category['id_categorie']; ?>"
-                                    class="group/btn inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-blue-500/50">
-                                    Voir véhicules
-                                    <i
-                                        class="fas fa-arrow-right transform group-hover/btn:translate-x-1 transition-transform"></i>
+                                <a href="vehicule.php?category=<?php echo $category['id_categorie']; ?>" class="group/btn inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-blue-500/50">
+                                    Voir articles
+                                    <i class="fas fa-arrow-right transform group-hover/btn:translate-x-1 transition-transform"></i>
                                 </a>
                             </div>
                         </div>
-
-                        <!-- Effet de brillance -->
-                        <div
-                            class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000">
-                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
-        <nav aria-label="Page navigation example">
-    <ul class="flex justify-center mt-5 space-x-3">
-        <!-- Previous Button -->
+        <nav aria-label="Page navigation" class="mt-8">
+    <ul class="flex justify-center space-x-2">
+        <!-- Bouton "Précédent" -->
         <li>
-            <?php
-            if ($page > 1) {
-                $prevPage = $page - 1;
-                echo "<a href='?page=$prevPage' class='px-4 py-2 text-white bg-blue-600 rounded-lg shadow-lg transition-transform transform hover:scale-105'>
-                <span aria-hidden='true'>&laquo;</span> Previous
-                </a>";
-            } else {
-                echo "<span class='px-4 py-2 text-gray-400 bg-gray-700 rounded-lg shadow-lg cursor-not-allowed'>
-                <span aria-hidden='true'>&laquo;</span> Previous
-                </span>";
-            }
-            ?>
+            <?php if ($page > 1): ?>
+                <a href="?page=<?php echo $page - 1; ?>"
+                   class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    &laquo; Précédent
+                </a>
+            <?php else: ?>
+                <span class="px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed">
+                    &laquo; Précédent
+                </span>
+            <?php endif; ?>
         </li>
 
-        <!-- Page Numbers -->
+        <!-- Numéros de page -->
         <?php
         $startPage = max(1, $page - 2);
         $endPage = min($totalPages, $page + 2);
 
-        // First Page Button
+        // Afficher "..." si nécessaire avant la première page
         if ($startPage > 1) {
-            echo "<li><a href='?page=1' class='px-4 py-2 text-gray-900 " . ($page == 1 ? 'bg-blue-600 text-white' : 'bg-gray-100') . " border border-gray-300 rounded-lg shadow-lg transition-transform transform hover:scale-105 hover:bg-blue-600 hover:text-white'>1</a></li>";
+            echo '<li><a href="?page=1" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-blue-600 hover:text-white">1</a></li>';
             if ($startPage > 2) {
-                echo "<li><span class='px-4 py-2 text-gray-500'>...</span></li>";
+                echo '<li><span class="px-4 py-2">...</span></li>';
             }
         }
 
-        // Loop through page numbers
+        // Afficher les numéros de page
         for ($i = $startPage; $i <= $endPage; $i++) {
-            if ($page === $i) {
-                echo "<li>
-                    <span class='px-4 py-2 text-white bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg shadow-lg'>
-                        $i
-                    </span>
-                  </li>";
+            if ($i == $page) {
+                echo '<li>
+                        <span class="px-4 py-2 bg-blue-600 text-white rounded-lg">' . $i . '</span>
+                      </li>';
             } else {
-                echo "<li>
-                    <a href='?page=$i' class='px-4 py-2 text-gray-900 bg-gray-100 border border-gray-300 rounded-lg shadow-lg transition-transform transform hover:scale-105 hover:bg-blue-600 hover:text-white'>
-                        $i
-                    </a>
-                  </li>";
+                echo '<li>
+                        <a href="?page=' . $i . '" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-blue-600 hover:text-white">' . $i . '</a>
+                      </li>';
             }
         }
 
-        // Last Page Button
+        // Afficher "..." si nécessaire après la dernière page
         if ($endPage < $totalPages) {
             if ($endPage < $totalPages - 1) {
-                echo "<li><span class='px-4 py-2 text-gray-500'>...</span></li>";
+                echo '<li><span class="px-4 py-2">...</span></li>';
             }
-            echo "<li><a href='?page=$totalPages' class='px-4 py-2 text-gray-900 bg-gray-100 border border-gray-300 rounded-lg shadow-lg transition-transform transform hover:scale-105 hover:bg-blue-600 hover:text-white'>$totalPages</a></li>";
+            echo '<li><a href="?page=' . $totalPages . '" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-blue-600 hover:text-white">' . $totalPages . '</a></li>';
         }
         ?>
 
-        <!-- Next Button -->
+        <!-- Bouton "Suivant" -->
         <li>
-            <?php
-            if ($page < $totalPages) {
-                $nextPage = $page + 1;
-                echo "<a href='?page=$nextPage' class='px-4 py-2 text-white bg-blue-600 rounded-lg shadow-lg transition-transform transform hover:scale-105'>
-                Next <span aria-hidden='true'>&raquo;</span>
-                </a>";
-            } else {
-                echo "<span class='px-4 py-2 text-gray-400 bg-gray-700 rounded-lg shadow-lg cursor-not-allowed'>
-                Next <span aria-hidden='true'>&raquo;</span>
-                </span>";
-            }
-            ?>
+            <?php if ($page < $totalPages): ?>
+                <a href="?page=<?php echo $page + 1; ?>"
+                   class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    Suivant &raquo;
+                </a>
+            <?php else: ?>
+                <span class="px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed">
+                    Suivant &raquo;
+                </span>
+            <?php endif; ?>
         </li>
     </ul>
 </nav>
-
-
     </main>
     <footer class="bg-gradient-to-t from-blue-400 to-blue-600 rounded-[2rem] shadow-2xl border-4 border-white/20 mt-8">
         <div class="mx-auto w-full max-w-screen-xl p-4 py-6 lg:py-8">

@@ -143,6 +143,42 @@ CREATE TABLE password_resets (
     used BOOLEAN DEFAULT FALSE
 );
 
+
+CREATE TABLE themes (
+    id_theme INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL,
+    description TEXT,
+    image_url VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE articles (
+    id_article INT AUTO_INCREMENT PRIMARY KEY,
+    id_user_fk INT NOT NULL, 
+    titre VARCHAR(255) NOT NULL,
+    contenu TEXT NOT NULL,
+    image_url VARCHAR(255),
+    id_theme_fk INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_theme_fk) REFERENCES themes(id_theme) ON DELETE CASCADE,
+        FOREIGN KEY (`id_user_fk`) REFERENCES `users`(`id_user`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE `comments` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,                
+    `id_user_fk` INT NOT NULL,                              
+    `id_article_fk` INT NOT NULL,
+    `statut` ENUM('en attente', 'approuvée', 'refusée') DEFAULT 'en attente',                        
+    `comment` TEXT,                                      
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    FOREIGN KEY (`id_user_fk`) REFERENCES `users`(`id_user`) ON DELETE CASCADE ON UPDATE CASCADE,  
+    FOREIGN KEY (`id_article_fk`) REFERENCES `articles`(`id_article`) ON DELETE CASCADE ON UPDATE CASCADE 
+);
+
 INSERT INTO `roles` (`role`) VALUES
 ('SuperAdmin'),
 ('Admin'),

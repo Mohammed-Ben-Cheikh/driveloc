@@ -1,9 +1,9 @@
 <?php
 require_once __DIR__ . '/../database/Database.php';
 
-class Categorie
+class Theme
 {
-    private $id_categorie;
+    private $id_theme;
     private $nom;
     private $description;
     private $image_url;
@@ -12,19 +12,19 @@ class Categorie
         $nom,
         $description = null,
         $image_url = null,
-        $id_categorie = null
+        $id_theme = null
     ) {
         $this->nom = $nom;
         $this->description = $description;
         $this->image_url = $image_url;
-        $this->id_categorie = $id_categorie;
+        $this->id_theme = $id_theme;
     }
 
     public function create()
     {
         $database = new Database();
         $db = $database->connect();
-        $sql = "INSERT INTO categories (nom, description, image_url) 
+        $sql = "INSERT INTO themes (nom, description, image_url) 
                 VALUES (?, ?, ?)";
         $stmt = $db->prepare($sql);
         $stmt->execute([
@@ -40,7 +40,7 @@ class Categorie
     {
         $database = new Database();
         $db = $database->connect();
-        $sql = "SELECT * FROM categories";
+        $sql = "SELECT * FROM themes";
         $stmt = $db->query($sql);
         $database->disconnect();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -50,7 +50,7 @@ class Categorie
     {
         $database = new Database();
         $db = $database->connect();
-        $sql = "SELECT * FROM categories WHERE id_categorie = ?";
+        $sql = "SELECT * FROM themes WHERE id_theme = ?";
         $stmt = $db->prepare($sql);
         $stmt->execute([$id]);
         $database->disconnect();
@@ -61,14 +61,14 @@ class Categorie
     {
         $database = new Database();
         $db = $database->connect();
-        $sql = "UPDATE categories SET nom = ?, description = ?, 
-                image_url = ? WHERE id_categorie = ?";
+        $sql = "UPDATE themes SET nom = ?, description = ?, 
+                image_url = ? WHERE id_theme = ?";
         $stmt = $db->prepare($sql);
         $result = $stmt->execute([
             $this->nom,
             $this->description,
             $this->image_url,
-            $this->id_categorie
+            $this->id_theme
         ]);
         $database->disconnect();
         return $result;
@@ -78,7 +78,7 @@ class Categorie
     {
         $database = new Database();
         $db = $database->connect();
-        $sql = "DELETE FROM categories WHERE id_categorie = ?";
+        $sql = "DELETE FROM themes WHERE id_theme = ?";
         $stmt = $db->prepare($sql);
         $result = $stmt->execute([$id]);
         $database->disconnect();
@@ -90,9 +90,9 @@ class Categorie
         $database = new Database();
         $db = $database->connect();
         $query = "SELECT c.*, COUNT(v.id_vehicule) as vehicle_count 
-                    FROM categories c 
-                    LEFT JOIN vehicules v ON c.id_categorie = v.id_categorie_fk 
-                    GROUP BY c.id_categorie 
+                    FROM themes c 
+                    LEFT JOIN vehicules v ON c.id_theme = v.id_theme_fk 
+                    GROUP BY c.id_theme 
                     ORDER BY vehicle_count DESC 
                     LIMIT 1";
         $stmt = $db->prepare($query);
@@ -100,24 +100,24 @@ class Categorie
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public static function NbCategories()
+    public static function Nbthemes()
     {
         $database = new Database();
         $db = $database->connect();
-        $query = $db->query("SELECT COUNT(*) as total FROM categories");
+        $query = $db->query("SELECT COUNT(*) as total FROM themes");
         $result = $query->fetch(PDO::FETCH_ASSOC);
         $database->disconnect();
         return (int)$result['total'];
     }
 
-    public static function GetCategories($lignes, $page = 1)
+    public static function Getthemes($lignes, $page = 1)
     {
         $database = new Database();
         $db = $database->connect();
     
         $offset = ($page - 1) * $lignes;
     
-        $query = $db->prepare("SELECT * FROM categories LIMIT :limit OFFSET :offset");
+        $query = $db->prepare("SELECT * FROM themes LIMIT :limit OFFSET :offset");
         
         $query->bindParam(':limit', $lignes, PDO::PARAM_INT);
         $query->bindParam(':offset', $offset, PDO::PARAM_INT);

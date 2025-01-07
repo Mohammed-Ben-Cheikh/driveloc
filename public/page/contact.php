@@ -49,7 +49,7 @@ if (isset($_SESSION['admin_id']) && $_SESSION['admin_id']) {
             </div>
             <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-user">
                 <ul
-                    class="flex flex-col justify-center items-center font-medium p-4 rounded-lg w-full md:w-[38rem] md:h-10 md:p-0 mt-4 border border-gray-100 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 bg-white">
+                    class="flex flex-col justify-center items-center font-medium p-4 rounded-lg w-full md:w-[44rem] md:h-10 md:p-0 mt-4 border border-gray-100 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 bg-white">
                     <li>
                         <a href="../index.php"
                             class="block py-2 px-3 text-white bg-blue-600 rounded md:bg-transparent md:text-blue-600 md:p-0">Home</a>
@@ -67,6 +67,10 @@ if (isset($_SESSION['admin_id']) && $_SESSION['admin_id']) {
                             class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-600 md:p-0 ">Reservation</a>
                     </li>
                     <li>
+                        <a href="blogger.php"
+                            class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-600 md:p-0 ">Blogger</a>
+                    </li>
+                    <li>
                         <a href="users.php"
                             class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-600 md:p-0 ">Espace
                             client</a>
@@ -82,7 +86,7 @@ if (isset($_SESSION['admin_id']) && $_SESSION['admin_id']) {
     <main class="space-y-8">
         <!-- Section Hero -->
         <section
-            class="relative overflow-hidden rounded-[2rem] bg-black/35 backdrop-blur-sm border-4 border-white shadow-2xl p-8 my-8">
+            class="relative overflow-hidden rounded-[2rem] bg-black/35 backdrop-blur-sm border-4 h-56 border-white shadow-2xl p-8 my-8">
             <div class="absolute inset-0 mix-blend-overlay p-2">
                 <img src="../img/herocar.jpg" alt="Contactez-Nous" class="w-full h-full rounded-3xl object-cover">
             </div>

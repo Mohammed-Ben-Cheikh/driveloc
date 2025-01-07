@@ -37,7 +37,7 @@ if ($selectedCategory) {
     <main class="">
         <!-- Filtres et recherche -->
         <section
-            class="overflow-hidden rounded-[2rem] bg-white/50 backdrop-blur-sm border-4 border-white shadow-2xl p-8 mt-8">
+            class="overflow-hidden rounded-[2rem] bg-white/50 backdrop-blur-sm border-4  border-white shadow-2xl p-8 mt-8">
             <div class="flex justify-between items-center">
                 <!-- Barre de recherche -->
                 <div class="md:col-span-2">
