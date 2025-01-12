@@ -113,6 +113,10 @@ class StatistiquesManager
         $stmt = $db->query($query);
         $stats['vehicules_reserves'] = $stmt->fetch(PDO::FETCH_ASSOC)['vehicules_reserves'];
 
+        $query = "SELECT COUNT(*) as total_themes FROM themes";
+        $stmt = $db->query($query);
+        $stats['total_themes'] = $stmt->fetch(PDO::FETCH_ASSOC)['total_themes'];
+
         $database->disconnect();
         return $stats;
     }

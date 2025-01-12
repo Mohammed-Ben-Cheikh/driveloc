@@ -12,6 +12,7 @@
         "herocarjpg",
         "kilometrage",
         "modele",
+        "Populartheme",
         "prenom",
         "refusees",
         "reser",
@@ -21,5 +22,6 @@
         "vehicule",
         "vehicules"
     ],
-    "liveServer.settings.port": 5501
+    "liveServer.settings.port": 5501,
+    "php.version": "8.4"
 }

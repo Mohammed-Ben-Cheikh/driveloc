@@ -85,15 +85,15 @@ class Theme
         return $result;
     }
 
-    public static function getMostPopularCategory()
+    public static function getMostPopulartheme()
     {
         $database = new Database();
         $db = $database->connect();
-        $query = "SELECT c.*, COUNT(v.id_vehicule) as vehicle_count 
-                    FROM themes c 
-                    LEFT JOIN vehicules v ON c.id_theme = v.id_theme_fk 
-                    GROUP BY c.id_theme 
-                    ORDER BY vehicle_count DESC 
+        $query = "SELECT t.*, COUNT(a.id_article) as article_count 
+                    FROM themes t 
+                    LEFT JOIN articles a ON t.id_theme = a.id_theme_fk 
+                    GROUP BY t.id_theme 
+                    ORDER BY article_count DESC 
                     LIMIT 1";
         $stmt = $db->prepare($query);
         $stmt->execute();

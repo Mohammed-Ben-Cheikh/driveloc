@@ -8,7 +8,7 @@ if (isset($_SESSION['user_id']) && $_SESSION['user_id']) {
     exit();
 }
 
-require_once __DIR__ . '/../../app/controller/reservations.php';
+require_once __DIR__ . '/../../app/controller/articles.php';
 require_once __DIR__ . '/../../app/controller/users.php';
 require_once __DIR__ . '/../../app/controller/vehicules.php';
 require_once '../../app/controller/statistiquesManager.php';
@@ -18,32 +18,32 @@ $stats = StatistiquesManager::getDashboardStats();
 // Gestion des actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
-    $id_reservation = $_POST['id_reservation'] ?? '';
+    $id_article = $_POST['id_article'] ?? '';
     UpdateDisponibilite::UpdateDisponibilite();
 
     switch ($action) {
         case 'approve':
             // Mettre à jour les statistiques après l'inscription
             StatistiquesManager::calculerEtMettreAJour();
-            
-            Reservation::updateStatut($id_reservation, 'approuvée');
+
+            article::updateStatut($id_article, 'approuvée');
             break;
         case 'reject':
             // Mettre à jour les statistiques après l'inscription
             StatistiquesManager::calculerEtMettreAJour();
-            
-            Reservation::updateStatut($id_reservation, 'refusée');
+
+            article::updateStatut($id_article, 'refusée');
             break;
         case 'complete':
             // Mettre à jour les statistiques après l'inscription
             StatistiquesManager::calculerEtMettreAJour();
-            
-            Reservation::updateStatut($id_reservation, 'terminée');
+
+            article::updateStatut($id_article, 'terminée');
             break;
         case 'cancel':
             StatistiquesManager::calculerEtMettreAJour();
-            
-            Reservation::updateStatut($id_reservation, 'annuler');
+
+            article::updateStatut($id_article, 'annuler');
             break;
     }
 }
@@ -54,22 +54,22 @@ $date_filter = $_GET['date'] ?? '';
 $search = $_GET['search'] ?? '';
 
 // Filtres
-$reservations = Reservation::getAll();
+$articles = Article::getAll();
 
 if ($status_filter) {
-    $reservations = array_filter($reservations, function ($r) use ($status_filter) {
+    $articles = array_filter($articles, function ($r) use ($status_filter) {
         return $r['statut'] === $status_filter;
     });
 }
 
 if ($date_filter) {
-    $reservations = array_filter($reservations, function ($r) use ($date_filter) {
-        return date('Y-m-d', strtotime($r['date_reservation'])) === $date_filter;
+    $articles = array_filter($articles, function ($r) use ($date_filter) {
+        return date('Y-m-d', strtotime($r['date_article'])) === $date_filter;
     });
 }
 
 if ($search) {
-    $reservations = array_filter($reservations, function ($r) use ($search) {
+    $articles = array_filter($articles, function ($r) use ($search) {
         return stripos($r['username'], $search) !== false ||
             stripos($r['vehicule_nom'], $search) !== false ||
             stripos($r['lieux'], $search) !== false;
@@ -113,8 +113,8 @@ if ($search) {
                     </a>
                 </li>
                 <li class="bg-dark/50 border-l-4 border-purple-600">
-                    <a href="reservations.php" class="flex items-center px-6 py-3 text-gray-300 hover:text-white">
-                        <i class="fas fa-calendar-alt mr-3"></i> Reservations
+                    <a href="articles.php" class="flex items-center px-6 py-3 text-gray-300 hover:text-white">
+                        <i class="fas fa-calendar-alt mr-3"></i> articles
                     </a>
                 </li>
                 <li class="hover:bg-gray-700">
@@ -124,7 +124,7 @@ if ($search) {
                 </li>
                 <li class="hover:bg-gray-700">
                     <a href="themes.php" class="flex items-center px-6 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-palette mr-3"></i> themes
+                        <i class="fas fa-palette mr-3"></i> themes
                     </a>
                 </li>
                 <li class="hover:bg-gray-700">
@@ -207,7 +207,7 @@ if ($search) {
                         <div class="flex justify-between items-center">
                             <div>
                                 <p class="text-white/60 text-sm">Total Réservations</p>
-                                <h3 class="text-3xl font-bold text-white"><?php echo $stats['total_reservations'] ?></h3>
+                                <h3 class="text-3xl font-bold text-white"><?php echo $stats['total_articles'] ?></h3>
                             </div>
                             <div class="bg-white/10 p-3 rounded-lg">
                                 <i class="fas fa-calendar-check text-2xl text-white"></i>
@@ -219,7 +219,8 @@ if ($search) {
                         <div class="flex justify-between items-center">
                             <div>
                                 <p class="text-white/60 text-sm">En Attente</p>
-                                <h3 class="text-3xl font-bold text-white"><?php echo $stats['reservations_en_attente']; ?></h3>
+                                <h3 class="text-3xl font-bold text-white"><?php echo $stats['articles_en_attente']; ?>
+                                </h3>
                             </div>
                             <div class="bg-white/10 p-3 rounded-lg">
                                 <i class="fas fa-clock text-2xl text-white"></i>
@@ -231,7 +232,8 @@ if ($search) {
                         <div class="flex justify-between items-center">
                             <div>
                                 <p class="text-white/60 text-sm">Approuvées</p>
-                                <h3 class="text-3xl font-bold text-white"><?php echo $stats['reservations_approuvees']; ?></h3>
+                                <h3 class="text-3xl font-bold text-white"><?php echo $stats['articles_approuvees']; ?>
+                                </h3>
                             </div>
                             <div class="bg-white/10 p-3 rounded-lg">
                                 <i class="fas fa-check text-2xl text-white"></i>
@@ -243,7 +245,7 @@ if ($search) {
                         <div class="flex justify-between items-center">
                             <div>
                                 <p class="text-white/60 text-sm">Refusées</p>
-                                <h3 class="text-3xl font-bold text-white"><?php echo $stats['reservations_refusees'] ?></h3>
+                                <h3 class="text-3xl font-bold text-white"><?php echo $stats['articles_refusees'] ?></h3>
                             </div>
                             <div class="bg-white/10 p-3 rounded-lg">
                                 <i class="fas fa-flag-checkered text-2xl text-white"></i>
@@ -255,7 +257,8 @@ if ($search) {
                         <div class="flex justify-between items-center">
                             <div>
                                 <p class="text-white/60 text-sm">Terminées</p>
-                                <h3 class="text-3xl font-bold text-white"><?php echo $stats['reservations_terminee']; ?></h3>
+                                <h3 class="text-3xl font-bold text-white"><?php echo $stats['articles_terminee']; ?>
+                                </h3>
                             </div>
                             <div class="bg-white/10 p-3 rounded-lg">
                                 <i class="fas fa-flag-checkered text-2xl text-white"></i>
@@ -301,18 +304,18 @@ if ($search) {
                     </form>
                 </div>
 
-                <!-- Reservations Grid -->
+                <!-- articles Grid -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                    <?php foreach ($reservations as $reservation): ?>
+                    <?php foreach ($articles as $article): ?>
                         <div
                             class="bg-white/10 backdrop-blur-md rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 border border-gray-700/50">
                             <div class="relative">
-                                <img src="<?php echo getVehiculeImage($reservation['id_vehicule_fk']); ?>"
+                                <img src="<?php echo getVehiculeImage($article['id_vehicule_fk']); ?>"
                                     class="w-full h-48 object-cover" alt="Véhicule">
                                 <div class="absolute top-4 right-4">
                                     <span class="px-4 py-2 rounded-full text-sm font-semibold 
-                                        <?php echo getStatusClass($reservation['statut']); ?>">
-                                        <?php echo ucfirst($reservation['statut']); ?>
+                                        <?php echo getStatusClass($article['statut']); ?>">
+                                        <?php echo ucfirst($article['statut']); ?>
                                     </span>
                                 </div>
                             </div>
@@ -321,19 +324,18 @@ if ($search) {
                                 <div class="flex justify-between items-start mb-4">
                                     <div>
                                         <h3 class="text-xl font-bold text-white">Réservation
-                                            #<?php echo $reservation['id_reservation']; ?></h3>
+                                            #<?php echo $article['id_article']; ?></h3>
                                         <p class="text-gray-400">
-                                            <?php echo getVehiculeName($reservation['id_vehicule_fk']); ?>
+                                            <?php echo getVehiculeName($article['id_vehicule_fk']); ?>
                                         </p>
                                     </div>
                                     <div class="flex gap-2">
-                                        <?php if ($reservation['statut'] === 'en attente'): ?>
+                                        <?php if ($article['statut'] === 'en attente'): ?>
                                             <form method="POST" class="flex-1">
-                                                <input type="hidden" name="id_reservation"
-                                                    value="<?php echo $reservation['id_reservation']; ?>">
+                                                <input type="hidden" name="id_article"
+                                                    value="<?php echo $article['id_article']; ?>">
                                                 <input type="hidden" name="action" value="approve">
-                                                <button type="submit" 
-                                                    class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg 
+                                                <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg 
                                                            hover:from-green-600 hover:to-green-700 transform hover:scale-105 transition-all duration-300
                                                            flex items-center justify-center gap-2">
                                                     <i class="fas fa-check"></i>
@@ -341,11 +343,10 @@ if ($search) {
                                                 </button>
                                             </form>
                                             <form method="POST" class="flex-1">
-                                                <input type="hidden" name="id_reservation"
-                                                    value="<?php echo $reservation['id_reservation']; ?>">
+                                                <input type="hidden" name="id_article"
+                                                    value="<?php echo $article['id_article']; ?>">
                                                 <input type="hidden" name="action" value="reject">
-                                                <button type="submit" 
-                                                    class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg 
+                                                <button type="submit" class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg 
                                                            hover:from-red-600 hover:to-red-700 transform hover:scale-105 transition-all duration-300
                                                            flex items-center justify-center gap-2">
                                                     <i class="fas fa-times"></i>
@@ -353,22 +354,22 @@ if ($search) {
                                                 </button>
                                             </form>
                                             <form method="POST" class="flex-1">
-                                                <input type="hidden" name="id_reservation" value="<?php echo $reservation['id_reservation']; ?>">
+                                                <input type="hidden" name="id_article"
+                                                    value="<?php echo $article['id_article']; ?>">
                                                 <input type="hidden" name="action" value="cancel">
-                                                <button type="submit" 
-                                                    class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg 
+                                                <button type="submit" class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg 
                                                            hover:from-red-600 hover:to-red-700 transform hover:scale-105 transition-all duration-300
                                                            flex items-center justify-center gap-2">
                                                     <i class="fas fa-ban"></i>
                                                     <span>Annuler la réservation</span>
                                                 </button>
                                             </form>
-                                        <?php elseif ($reservation['statut'] === 'approuvée'): ?>
+                                        <?php elseif ($article['statut'] === 'approuvée'): ?>
                                             <form method="POST" class="w-full">
-                                                <input type="hidden" name="id_reservation" value="<?php echo $reservation['id_reservation']; ?>">
+                                                <input type="hidden" name="id_article"
+                                                    value="<?php echo $article['id_article']; ?>">
                                                 <input type="hidden" name="action" value="complete">
-                                                <button type="submit" 
-                                                    class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg 
+                                                <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg 
                                                            hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-300
                                                            flex items-center justify-center gap-2 group">
                                                     <i class="fas fa-flag-checkered group-hover:animate-bounce"></i>
@@ -376,23 +377,25 @@ if ($search) {
                                                 </button>
                                             </form>
                                             <form method="POST" class="flex-1">
-                                                <input type="hidden" name="id_reservation" value="<?php echo $reservation['id_reservation']; ?>">
+                                                <input type="hidden" name="id_article"
+                                                    value="<?php echo $article['id_article']; ?>">
                                                 <input type="hidden" name="action" value="cancel">
-                                                <button type="submit" 
-                                                    class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg 
+                                                <button type="submit" class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg 
                                                            hover:from-red-600 hover:to-red-700 transform hover:scale-105 transition-all duration-300
                                                            flex items-center justify-center gap-2">
                                                     <i class="fas fa-ban"></i>
                                                     <span>Annuler la réservation</span>
                                                 </button>
                                             </form>
-                                        <?php elseif ($reservation['statut'] === 'terminée'): ?>
-                                            <div class="w-full bg-gray-600/50 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2">
+                                        <?php elseif ($article['statut'] === 'terminée'): ?>
+                                            <div
+                                                class="w-full bg-gray-600/50 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2">
                                                 <i class="fas fa-check-circle text-green-400"></i>
                                                 <span class="text-xs">Réservation terminée</span>
                                             </div>
-                                        <?php elseif ($reservation['statut'] === 'refusée'): ?>
-                                            <div class="w-full bg-gray-600/50 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2">
+                                        <?php elseif ($article['statut'] === 'refusée'): ?>
+                                            <div
+                                                class="w-full bg-gray-600/50 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2">
                                                 <i class="fas fa-ban text-red-400"></i>
                                                 <span class="text-xs">Réservation refusée</span>
                                             </div>
@@ -403,47 +406,53 @@ if ($search) {
                                 <div class="space-y-3">
                                     <div class="flex items-center text-gray-400">
                                         <i class="fas fa-user-circle w-5"></i>
-                                        <span class="ml-2"><?php echo $reservation['username']; ?></span>
+                                        <span class="ml-2"><?php echo $article['username']; ?></span>
                                     </div>
                                     <div class="flex items-center text-gray-400">
                                         <i class="fas fa-map-marker-alt w-5"></i>
-                                        <span class="ml-2"><?php echo $reservation['lieux']; ?></span>
+                                        <span class="ml-2"><?php echo $article['lieux']; ?></span>
                                     </div>
                                     <div class="flex items-center text-gray-400">
                                         <i class="fas fa-calendar w-5"></i>
-                                        <span
-                                            class="ml-2"><?php echo formatDate($reservation['date_reservation']); ?></span>
+                                        <span class="ml-2"><?php echo formatDate($article['date_article']); ?></span>
                                     </div>
                                 </div>
 
-                                <?php if ($reservation['commentaire']): ?>
+                                <?php if ($article['commentaire']): ?>
                                     <div class="mt-4 p-3 bg-gray-800/50 rounded-lg">
-                                        <p class="text-gray-400 text-sm"><?php echo $reservation['commentaire']; ?></p>
+                                        <p class="text-gray-400 text-sm"><?php echo $article['commentaire']; ?></p>
                                     </div>
                                 <?php endif; ?>
                             </div>
                             <div class="mt-4 pt-4 border-t border-gray-700 p-4">
                                 <div class="flex justify-between items-center">
                                     <div class="flex flex-col items-center">
-                                        <div class="w-8 h-8 rounded-full <?php echo $reservation['statut'] !== 'refusée' ? 'bg-green-500' : 'bg-gray-500'; ?> flex items-center justify-center">
+                                        <div
+                                            class="w-8 h-8 rounded-full <?php echo $article['statut'] !== 'refusée' ? 'bg-green-500' : 'bg-gray-500'; ?> flex items-center justify-center">
                                             <i class="fas fa-clock text-white"></i>
                                         </div>
                                         <span class="text-xs text-gray-400 mt-1">En attente</span>
                                     </div>
                                     <div class="flex-1 h-1 mx-2 bg-gray-700">
-                                        <div class="h-full <?php echo $reservation['statut'] === 'approuvée' || $reservation['statut'] === 'terminée' ? 'bg-blue-500' : 'bg-gray-700'; ?>"></div>
+                                        <div
+                                            class="h-full <?php echo $article['statut'] === 'approuvée' || $article['statut'] === 'terminée' ? 'bg-blue-500' : 'bg-gray-700'; ?>">
+                                        </div>
                                     </div>
                                     <div class="flex flex-col items-center">
-                                        <div class="w-8 h-8 rounded-full <?php echo $reservation['statut'] === 'approuvée' || $reservation['statut'] === 'terminée' ? 'bg-blue-500' : 'bg-gray-500'; ?> flex items-center justify-center">
+                                        <div
+                                            class="w-8 h-8 rounded-full <?php echo $article['statut'] === 'approuvée' || $article['statut'] === 'terminée' ? 'bg-blue-500' : 'bg-gray-500'; ?> flex items-center justify-center">
                                             <i class="fas fa-check text-white"></i>
                                         </div>
                                         <span class="text-xs text-gray-400 mt-1">Approuvée</span>
                                     </div>
                                     <div class="flex-1 h-1 mx-2 bg-gray-700">
-                                        <div class="h-full <?php echo $reservation['statut'] === 'terminée' ? 'bg-green-500' : 'bg-gray-700'; ?>"></div>
+                                        <div
+                                            class="h-full <?php echo $article['statut'] === 'terminée' ? 'bg-green-500' : 'bg-gray-700'; ?>">
+                                        </div>
                                     </div>
                                     <div class="flex flex-col items-center">
-                                        <div class="w-8 h-8 rounded-full <?php echo $reservation['statut'] === 'terminée' ? 'bg-green-500' : 'bg-gray-500'; ?> flex items-center justify-center">
+                                        <div
+                                            class="w-8 h-8 rounded-full <?php echo $article['statut'] === 'terminée' ? 'bg-green-500' : 'bg-gray-500'; ?> flex items-center justify-center">
                                             <i class="fas fa-flag-checkered text-white"></i>
                                         </div>
                                         <span class="text-xs text-gray-400 mt-1">Terminée</span>

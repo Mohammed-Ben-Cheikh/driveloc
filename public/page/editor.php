@@ -5,7 +5,8 @@ if (isset($_SESSION['admin_id']) && $_SESSION['admin_id']) {
 } else if (!isset($_SESSION['user_id']) && !$_SESSION['user_id']) {
     header("Location: ../index.php");
 }
-?>
+require_once '../../app/controller/themes.php'
+    ?>
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -14,7 +15,7 @@ if (isset($_SESSION['admin_id']) && $_SESSION['admin_id']) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Éditeur de Texte</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.6/quill.snow.min.css" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com/"></script>
+    <script src="http://localhost/Drive-Loc-/tailwindcss.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/stylec.css">
 </head>
@@ -105,38 +106,94 @@ if (isset($_SESSION['admin_id']) && $_SESSION['admin_id']) {
                 </div>
             </div>
         </div>
-        <div class="flex flex-col md:flex-row">
+        <div class="flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-6">
             <!-- Main Content -->
-            <div class="m-auto w-full">
-
+            <div class="m-auto w-full max-w-6xl">
                 <!-- Toolbar -->
-                <div class="wp-toolbar mb-8 flex flex-wrap gap-2">
-                    <button class="wp-button" id="saveButton">
+                <div class="wp-toolbar mb-8 flex gap-4">
+                    <button
+                        class="wp-button px-6 py-3 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700 transition duration-300"
+                        id="saveButton">
                         <i class="fas fa-save"></i> Enregistrer
                     </button>
-                    <button class="wp-button" id="previewButton">
+                    <button
+                        class="wp-button px-6 py-3 bg-gray-600 text-white rounded-md shadow hover:bg-gray-700 transition duration-300"
+                        id="previewButton">
                         <i class="fas fa-eye"></i> Aperçu
                     </button>
-                    <button class="wp-button" id="exportButton">
+                    <button
+                        class="wp-button px-6 py-3 bg-green-600 text-white rounded-md shadow hover:bg-green-700 transition duration-300"
+                        id="exportButton">
                         <i class="fas fa-download"></i> Exporter
                     </button>
                 </div>
 
                 <label for="postImg" class="bg-white p-3 rounded-xl text-2xl">L'Image</label>
-                <input type="file" class="w-full h-16 text-3xl mb-4 bg-white p-2" placeholder="Ajouter un Img"
-                    id="postImg">
+                <div class="relative mb-8">
+                    <input type="file" id="postImg" class="hidden" onchange="displayImage(this)">
+                    <label for="postImg"
+                        class="cursor-pointer w-full h-16 text-lg bg-gray-100 hover:bg-gray-200 transition duration-300 flex items-center justify-center">
+                        <i class="fas fa-upload text-gray-600 mr-2"></i>
+                        <span class="text-gray-600">Cliquer pour télécharger une image</span>
+                    </label>
+                    <!-- Preview of the uploaded image -->
+                    <div id="imagePreview" class="mt-4 hidden">
+                        <img src="" alt="Image Preview" class="w-full h-48 object-cover rounded-md shadow-lg">
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <label for="description" class="bg-white p-3 rounded-xl text-2xl">La Description</label>
+                <textarea id="description"
+                    class="mb-8 w-full h-32 text-lg p-4 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Ajouter une description"></textarea>
+
+                <!-- thèmes -->
+                <label class="bg-white p-3 rounded-xl text-2xl">Thèmes :</label>
+                <select id="id_theme_fk" required
+                    class="mb-8 block w-full px-4 py-3 border border-gray-300 shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <!-- Options should be dynamically generated from the database -->
+                    <?php foreach (Theme::getAll() as $theme): ?>
+                        <option value="<?php echo $theme['id_theme'] ?>">
+                            <?php echo $theme['nom']; ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+
                 <label for="postTitle" class="bg-white p-3 rounded-xl text-2xl">Le Titre</label>
-                <input type="text" class="w-full h-16 text-3xl mb-4 p-2" placeholder="Ajouter un titre" id="postTitle">
+                <input type="text" name="postTitle"
+                    class="mb-8 w-full h-16 text-lg p-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Ajouter un titre" id="postTitle">
+
                 <!-- Editor -->
                 <label for="editor" class="bg-white p-3 rounded-xl text-2xl">Le Body</label>
-                <div class="w-full bg-white">
-                    <div id="editor" class="w-full h-screen"></div>
+                <div class="w-full bg-white border border-gray-300 shadow">
+                    <div id="editor" class="w-full"></div>
                 </div>
             </div>
         </div>
         <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/quill-image-resize-module@3.0.0/image-resize.min.js"></script>
         <script>
+            function displayImage(input) {
+                const preview = document.getElementById('imagePreview');
+                const file = input.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = "Image Preview";
+                        img.classList.add("w-full", "h-48", "object-cover", "rounded-md", "shadow-lg");
+                        preview.innerHTML = '';  // Clear previous image
+                        preview.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                    preview.classList.remove('hidden');
+                } else {
+                    preview.classList.add('hidden');
+                }
+            }
             // Notification function
             function showNotification(message, type = 'success') {
                 const notification = document.createElement('div');
@@ -221,20 +278,63 @@ if (isset($_SESSION['admin_id']) && $_SESSION['admin_id']) {
                 showNotification('Erreur lors du chargement de l\'éditeur', 'error');
             }
 
-            // Save function
             document.getElementById('saveButton').addEventListener('click', function () {
-                showLoading(true);
+                showLoading(true); // Afficher l'état de chargement
                 try {
-                    const title = document.getElementById('postTitle').value;
-                    const content = quill.root.innerHTML;
-                    showNotification('Article sauvegardé avec succès');
+                    // Récupérer les données du formulaire
+                    const title = document.getElementById('postTitle').value.trim();
+                    const content = quill.root.innerHTML.trim(); // Récupérer le contenu de l'éditeur Quill
+                    const image = document.getElementById('postImg').files[0];
+                    const theme = document.getElementById('id_theme_fk').value.trim();
+                    const disc = document.getElementById('description').value.trim();
+                    // Validation des champs
+                    if (!title || !content || !theme || !disc) {
+                        showNotification('Tous les champs sont obligatoires.', 'error');
+                        showLoading(false);
+                        return;
+                    }
+                    // Créer un objet FormData
+                    let formData = new FormData();
+                    formData.append('title', title);
+                    formData.append('content', content);
+                    formData.append('theme', theme);
+                    formData.append('disc', disc);
+                    if (image) {
+                        formData.append('image', image); // Ajouter l'image si elle existe
+                    }
+                    // Envoyer les données au serveur
+                    fetch('saveArticle.php', {
+                        method: 'POST',
+                        body: formData // Pas besoin de définir des headers pour FormData
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Erreur réseau, veuillez réessayer.');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            // Gérer la réponse du serveur
+                            if (data.success) {
+                                showNotification('Article sauvegardé avec succès.', 'success');
+                            } else {
+                                throw new Error(data.message || 'Erreur lors de la sauvegarde.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erreur lors de la sauvegarde:', error);
+                            showNotification('Erreur: ' + error.message, 'error');
+                        })
+                        .finally(() => {
+                            showLoading(false); // Masquer l'état de chargement
+                        });
                 } catch (error) {
-                    console.error('Erreur lors de la sauvegarde:', error);
-                    showNotification('Erreur lors de la sauvegarde', 'error');
-                } finally {
+                    console.error('Erreur inattendue:', error);
+                    showNotification('Erreur inattendue: ' + error.message, 'error');
                     showLoading(false);
                 }
             });
+
 
             // Preview button handler
             document.getElementById('previewButton').addEventListener('click', showPreview);

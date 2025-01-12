@@ -6,41 +6,36 @@ if (isset($_SESSION['user_id']) && $_SESSION['user_id']) {
     header("Location: ../../index.php");
 }
 require_once '../../app/database/Database.php';
-require_once '../../app/controller/categories.php';
+require_once '../../app/controller/themes.php';
+require_once '../../app/controller/articles.php';
 require_once '../../app/controller/statistiquesManager.php';
 require_once '../../app/controller/statistiques.php';
 
 // Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
-        $nom = $_POST['categoryName'];
-        $description = $_POST['categoryDesc'];
+        $nom = $_POST['themeName'];
+        $description = $_POST['themeDesc'];
         $image_url = '';
-
         // Handle file upload
-        if (isset($_FILES['categoryImage']) && $_FILES['categoryImage']['error'] == 0) {
+        if (isset($_FILES['themeImage']) && $_FILES['themeImage']['error'] == 0) {
             $allowed = ['jpg', 'jpeg', 'png', 'webp'];
-            $filename = $_FILES['categoryImage']['name'];
+            $filename = $_FILES['themeImage']['name'];
             $filetype = pathinfo($filename, PATHINFO_EXTENSION);
-
             if (in_array(strtolower($filetype), $allowed)) {
                 $newname = uniqid() . '.' . $filetype;
-                $upload_path = '../uploads/categories/' . $newname;
-
-                if (!is_dir('../uploads/categories/')) {
-                    mkdir('../uploads/categories/', 0777, true);
+                $upload_path = '../uploads/themes/' . $newname;
+                if (!is_dir('../uploads/themes/')) {
+                    mkdir('../uploads/themes/', 0777, true);
                 }
-
-                if (move_uploaded_file($_FILES['categoryImage']['tmp_name'], $upload_path)) {
-                    $image_url = 'uploads/categories/' . $newname;
+                if (move_uploaded_file($_FILES['themeImage']['tmp_name'], $upload_path)) {
+                    $image_url = 'uploads/themes/' . $newname;
                 }
             }
         }
-
-        $category = new Categorie($nom, $description, $image_url);
-        $result = $category->create();
+        $theme = new Theme($nom, $description, $image_url);
+        $result = $theme->create();
         StatistiquesManager::calculerEtMettreAJour();
-
         echo json_encode(['success' => true, 'message' => 'Catégorie ajoutée avec succès']);
         exit;
     } catch (PDOException $e) {
@@ -49,22 +44,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
 }
-
-
 $stats = StatistiquesManager::getDashboardStats();
-$mostPopularCategory = Categorie::getMostPopularCategory(); // Add this line to get the most popular category
+$mostPopulartheme = Theme::getMostPopulartheme();
+$static = StatistiquesManager::getVehicleStats();
 
-// Get all categories
-$categories = Categorie::getAll();
+// Get all themes
+$themes = Theme::getAll();
 
-// Get category by ID for edit form
+// Get theme by ID for edit form
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
     if (isset($_GET['action']) && $_GET['action'] === 'edit' && isset($_GET['id'])) {
-        $categoryId = $_GET['id'];
-        $categorie = Categorie::getById($categoryId);
-        if ($categorie) {
+        $themeId = $_GET['id'];
+        $Theme = Theme::getById($themeId);
+        if ($Theme) {
             header('Content-Type: application/json');
-            echo json_encode($category);
+            echo json_encode($theme);
             exit;
         }
     }
@@ -109,9 +103,14 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                         <i class="fas fa-calendar-alt mr-3"></i> Reservations
                     </a>
                 </li>
-                <li class="bg-dark/50 border-l-4 border-purple-600">
+                <li class="hover:bg-gray-700">
                     <a href="categories.php" class="flex items-center px-6 py-3 text-gray-300 hover:text-white">
                         <i class="fas fa-tags mr-3"></i> Categories
+                    </a>
+                </li>
+                <li class="bg-dark/50 border-l-4 border-purple-600">
+                    <a href="themes.php" class="flex items-center px-6 py-3 text-gray-300 hover:text-white">
+                        <i class="fas fa-palette mr-3"></i> themes
                     </a>
                 </li>
                 <li class="hover:bg-gray-700">
@@ -176,7 +175,8 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                                 <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100"><i
                                         class="fas fa-cog mr-2"></i> Settings</a>
                                 <hr class="my-2">
-                                <a href="../../authentification/logout.php" class="block px-4 py-2 text-red-600 hover:bg-gray-100"><i
+                                <a href="../../authentification/logout.php"
+                                    class="block px-4 py-2 text-red-600 hover:bg-gray-100"><i
                                         class="fas fa-sign-out-alt mr-2"></i> Logout</a>
                             </div>
                         </div>
@@ -188,7 +188,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
             <div class="p-4 md:p-6">
                 <!-- Page Header -->
                 <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-2xl font-bold">Gestion des Catégories</h1>
+                    <h1 class="text-2xl font-bold">Gestion des thèmes des blogs</h1>
                     <button onclick="openAddModal()"
                         class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center">
                         <i class="fas fa-plus mr-2"></i> Nouvelle Catégorie
@@ -201,7 +201,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                         <div class="flex justify-between items-center">
                             <div>
                                 <p class="text-white/60">Total Catégories</p>
-                                <h3 class="text-3xl font-bold"><?php echo $stats['total_categories']; ?></h3>
+                                <h3 class="text-3xl font-bold"><?php echo $static['total_themes']; ?></h3>
                             </div>
                             <div class="text-white/80 bg-white/10 p-3 rounded-lg">
                                 <i class="fas fa-tags text-2xl"></i>
@@ -223,7 +223,9 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                         <div class="flex justify-between items-center">
                             <div>
                                 <p class="text-white/60">Catégorie la + Populaire</p>
-                                <h3 class="text-xl font-bold"><?php echo !empty($mostPopularCategory['nom']) ? htmlspecialchars($mostPopularCategory['nom']) : "Aucune catégorie"; ?></h3>
+                                <h3 class="text-xl font-bold">
+                                    <?php echo !empty($mostPopulartheme['nom']) ? htmlspecialchars($mostPopulartheme['nom']) : "Aucune theme"; ?>
+                                </h3>
                             </div>
                             <div class="text-white/80 bg-white/10 p-3 rounded-lg">
                                 <i class="fas fa-star text-2xl"></i>
@@ -232,30 +234,29 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                     </div>
                 </div>
 
-                <!-- Categories Grid -->
+                <!-- themes Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <?php if (empty($categories)): ?>
+                    <?php if (empty($themes)): ?>
                         <div class="col-span-full text-center py-10">
                             <i class="fas fa-folder-open text-4xl text-gray-600 mb-3"></i>
                             <p class="text-gray-500">Aucune catégorie trouvée</p>
                         </div>
                     <?php else: ?>
-                        <?php foreach ($categories as $category): ?>
+                        <?php foreach ($themes as $theme): ?>
                             <div
                                 class="bg-dark-light rounded-xl overflow-hidden group hover:shadow-xl transition-all duration-300">
                                 <div class="relative h-48">
-                                    <img src="../<?php echo htmlspecialchars($category['image_url'] ?: 'img/default-category.jpg'); ?>"
-                                        class="w-full h-full object-cover"
-                                        alt="<?php echo htmlspecialchars($category['nom']); ?>">
+                                    <img src="../<?php echo htmlspecialchars($theme['image_url'] ?: 'img/default-theme.jpg'); ?>"
+                                        class="w-full h-full object-cover" alt="<?php echo htmlspecialchars($theme['nom']); ?>">
                                     <div
                                         class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                         <div class="flex space-x-2">
                                             <button class="p-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-                                                onclick="editCategory(<?php echo $category['id_categorie']; ?>)">
+                                                onclick="edittheme(<?= isset($theme['id_theme']) ? htmlspecialchars($theme['id_theme']) : '#' ?>)">
                                                 <i class="fas fa-edit text-white"></i>
                                             </button>
                                             <button class="p-2 bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
-                                                onclick="deleteCategory(<?php echo $category['id_categorie']; ?>)">
+                                                onclick="deletetheme(<?= isset($theme['id_theme']) ? htmlspecialchars($theme['id_theme']) : '#' ?>)">
                                                 <i class="fas fa-trash text-white"></i>
                                             </button>
                                         </div>
@@ -263,22 +264,21 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                                 </div>
                                 <div class="p-4">
                                     <div class="flex justify-between items-start mb-2">
-                                        <h3 class="text-lg font-semibold"><?php echo htmlspecialchars($category['nom']); ?></h3>
+                                        <h3 class="text-lg font-semibold"><?php echo htmlspecialchars($theme['nom']); ?></h3>
                                         <span class="bg-purple-600/20 text-purple-400 px-2 py-1 rounded-lg text-sm">
                                             <?php
-                                            require_once '../../app/controller/vehicules.php';
-                                            $vehicleCount = Vehicule::countByCategory($category['id_categorie']);
-                                            echo $vehicleCount . ' véhicule' . ($vehicleCount > 1 ? 's' : '');
+                                            $vehicleCount = Article::countByTheme($theme['id_theme']);
+                                            echo $vehicleCount . ' Article' . ($vehicleCount > 1 ? 's' : '');
                                             ?>
                                         </span>
                                     </div>
                                     <p class="text-gray-400 text-sm mb-3">
-                                        <?php echo htmlspecialchars($category['description']); ?>
+                                        <?php echo htmlspecialchars($theme['description']); ?>
                                     </p>
                                     <div class="flex justify-between items-center text-sm">
                                         <span class="text-gray-400">
                                             <i class="fas fa-calendar-alt mr-2"></i>
-                                            <?php echo date('d/m/Y', strtotime($category['created_at'])); ?>
+                                            <?php echo date('d/m/Y', strtotime($theme['created_at'])); ?>
                                         </span>
                                         <button class="text-purple-400 hover:text-purple-300">
                                             Voir détails <i class="fas fa-arrow-right ml-1"></i>
@@ -291,8 +291,8 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                 </div>
             </div>
 
-            <!-- Add Category Modal -->
-            <div id="addCategoryModal"
+            <!-- Add theme Modal -->
+            <div id="addthemeModal"
                 class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
                 <div class="bg-dark-light rounded-xl max-w-md w-full mx-4 shadow-2xl">
                     <div class="p-6">
@@ -303,29 +303,29 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
-                        <form id="addCategoryForm" class="space-y-4" onsubmit="handleSubmit(event)"
+                        <form id="addthemeForm" class="space-y-4" onsubmit="handleSubmit(event)"
                             enctype="multipart/form-data">
                             <div>
-                                <label for="categoryName" class="block text-sm font-medium text-gray-400 mb-2">Nom de la
+                                <label for="themeName" class="block text-sm font-medium text-gray-400 mb-2">Nom de la
                                     catégorie *</label>
-                                <input type="text" id="categoryName" name="categoryName" required
+                                <input type="text" id="themeName" name="themeName" required
                                     class="w-full bg-gray-800 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-600 transition-all border border-gray-700"
                                     placeholder="Entrez le nom de la catégorie">
-                                <div class="text-red-500 text-xs mt-1 hidden" id="categoryNameError"></div>
+                                <div class="text-red-500 text-xs mt-1 hidden" id="themeNameError"></div>
                             </div>
 
                             <div>
-                                <label for="categoryDesc"
-                                    class="block text-sm font-medium text-gray-400 mb-2">Description *</label>
-                                <textarea id="categoryDesc" name="categoryDesc" required
+                                <label for="themeDesc" class="block text-sm font-medium text-gray-400 mb-2">Description
+                                    *</label>
+                                <textarea id="themeDesc" name="themeDesc" required
                                     class="w-full bg-gray-800 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-600 transition-all border border-gray-700"
                                     rows="3" placeholder="Décrivez la catégorie"></textarea>
-                                <div class="text-red-500 text-xs mt-1 hidden" id="categoryDescError"></div>
+                                <div class="text-red-500 text-xs mt-1 hidden" id="themeDescError"></div>
                             </div>
 
                             <div class="relative">
                                 <div class="flex items-center justify-center w-full">
-                                    <label for="categoryImage"
+                                    <label for="themeImage"
                                         class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-700 bg-gray-800 border-gray-600 hover:border-purple-600 group transition-all">
                                         <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                             <svg class="w-8 h-8 mb-4 text-gray-400 group-hover:text-purple-500"
@@ -348,10 +348,10 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                                             <img src="" alt="Aperçu" class="w-full h-full object-cover">
                                         </div>
                                     </label>
-                                    <input type="file" id="categoryImage" name="categoryImage" required accept="image/*"
+                                    <input type="file" id="themeImage" name="themeImage" required accept="image/*"
                                         class="hidden" onchange="handleFileSelect(event)">
                                 </div>
-                                <div class="text-red-500 text-xs mt-1 hidden" id="categoryImageError"></div>
+                                <div class="text-red-500 text-xs mt-1 hidden" id="themeImageError"></div>
                             </div>
 
                             <div class="flex justify-end space-x-3 pt-4">
@@ -372,8 +372,8 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                 </div>
             </div>
 
-            <!-- Edit Category Modal -->
-            <div id="editCategoryModal"
+            <!-- Edit theme Modal -->
+            <div id="editthemeModal"
                 class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
                 <div class="bg-dark-light rounded-xl max-w-md w-full mx-4 shadow-2xl">
                     <div class="p-6">
@@ -383,30 +383,30 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
-                        <form id="editCategoryForm" class="space-y-4" onsubmit="handleEditSubmit(event)"
+                        <form id="editthemeForm" class="space-y-4" onsubmit="handleEditSubmit(event)"
                             enctype="multipart/form-data">
-                            <input type="hidden" id="editCategoryId" name="categoryId">
+                            <input type="hidden" id="editthemeId" name="themeId">
                             <div>
-                                <label for="editCategoryName" class="block text-sm font-medium text-gray-400 mb-2">Nom
+                                <label for="editthemeName" class="block text-sm font-medium text-gray-400 mb-2">Nom
                                     de la catégorie *</label>
-                                <input type="text" id="editCategoryName" name="categoryName" required
+                                <input type="text" id="editthemeName" name="themeName" required
                                     class="w-full bg-gray-800 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-600 transition-all border border-gray-700"
                                     placeholder="Entrez le nom de la catégorie">
-                                <div class="text-red-500 text-xs mt-1 hidden" id="editCategoryNameError"></div>
+                                <div class="text-red-500 text-xs mt-1 hidden" id="editthemeNameError"></div>
                             </div>
 
                             <div>
-                                <label for="editCategoryDesc"
+                                <label for="editthemeDesc"
                                     class="block text-sm font-medium text-gray-400 mb-2">Description *</label>
-                                <textarea id="editCategoryDesc" name="categoryDesc" required
+                                <textarea id="editthemeDesc" name="themeDesc" required
                                     class="w-full bg-gray-800 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-600 transition-all border border-gray-700"
                                     rows="3" placeholder="Décrivez la catégorie"></textarea>
-                                <div class="text-red-500 text-xs mt-1 hidden" id="editCategoryDescError"></div>
+                                <div class="text-red-500 text-xs mt-1 hidden" id="editthemeDescError"></div>
                             </div>
 
                             <div class="relative">
                                 <div class="flex items-center justify-center w-full">
-                                    <label for="editCategoryImage"
+                                    <label for="editthemeImage"
                                         class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-700 bg-gray-800 border-gray-600 hover:border-purple-600 group transition-all">
                                         <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                             <svg class="w-8 h-8 mb-4 text-gray-400 group-hover:text-purple-500"
@@ -429,10 +429,10 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                                             <img src="" alt="Aperçu" class="w-full h-full object-cover">
                                         </div>
                                     </label>
-                                    <input type="file" id="editCategoryImage" name="categoryImage" accept="image/*"
+                                    <input type="file" id="editthemeImage" name="themeImage" accept="image/*"
                                         class="hidden" onchange="handleFileSelectEdit(event)">
                                 </div>
-                                <div class="text-red-500 text-xs mt-1 hidden" id="editCategoryImageError"></div>
+                                <div class="text-red-500 text-xs mt-1 hidden" id="editthemeImageError"></div>
                             </div>
 
                             <div class="flex justify-end space-x-3 pt-4">
@@ -455,19 +455,19 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
             <script>
                 function openAddModal() {
-                    document.getElementById('addCategoryModal').classList.remove('hidden');
-                    document.getElementById('addCategoryModal').classList.add('flex');
+                    document.getElementById('addthemeModal').classList.remove('hidden');
+                    document.getElementById('addthemeModal').classList.add('flex');
                 }
 
                 function closeAddModal() {
-                    const modal = document.getElementById('addCategoryModal');
+                    const modal = document.getElementById('addthemeModal');
                     modal.classList.add('hidden');
-                    document.getElementById('addCategoryForm').reset();
+                    document.getElementById('addthemeForm').reset();
                     document.getElementById('imagePreview').classList.add('hidden');
                 }
 
                 // Close modal when clicking outside
-                document.getElementById('addCategoryModal').addEventListener('click', function (e) {
+                document.getElementById('addthemeModal').addEventListener('click', function (e) {
                     if (e.target === this) {
                         closeAddModal();
                     }
@@ -566,7 +566,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                 }
 
                 // Add drag and drop support
-                const dropZone = document.querySelector('label[for="categoryImage"]');
+                const dropZone = document.querySelector('label[for="themeImage"]');
 
                 ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                     dropZone.addEventListener(eventName, preventDefaults, false);
@@ -598,18 +598,18 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                 function handleDrop(e) {
                     const dt = e.dataTransfer;
                     const file = dt.files[0];
-                    const fileInput = document.getElementById('categoryImage');
+                    const fileInput = document.getElementById('themeImage');
 
                     fileInput.files = dt.files;
                     handleFileSelect({ target: { files: [file] } });
                 }
 
-                function deleteCategory(id) {
+                function deletetheme(id) {
                     if (confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')) {
                         const formData = new FormData();
                         formData.append('id', id);
 
-                        fetch('delete_category.php', {
+                        fetch('delete_theme.php', {
                             method: 'POST',
                             body: formData
                         })
@@ -629,38 +629,38 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                 }
 
                 // Add these new functions
-                function editCategory(categoryId) {
+                function edittheme(themeId) {
                     // Show modal
-                    const modal = document.getElementById('editCategoryModal');
+                    const modal = document.getElementById('editthemeModal');
                     modal.classList.remove('hidden');
                     modal.classList.add('flex');
 
-                    // Fetch category data
-                    fetch(`get_category.php?id=${categoryId}`)
+                    // Fetch theme data
+                    fetch(`get_theme.php?id=${themeId}`)
                         .then(response => response.json())
-                        .then(category => {
-                            document.getElementById('editCategoryId').value = category.id_categorie;
-                            document.getElementById('editCategoryName').value = category.nom;
-                            document.getElementById('editCategoryDesc').value = category.description;
+                        .then(theme => {
+                            document.getElementById('editthemeId').value = theme.id_Theme;
+                            document.getElementById('editthemeName').value = theme.nom;
+                            document.getElementById('editthemeDesc').value = theme.description;
 
                             // Show current image if exists
                             const currentImage = document.querySelector('#currentImage img');
-                            if (currentImage && category.image_url) {
-                                currentImage.src = '../' + category.image_url;
+                            if (currentImage && theme.image_url) {
+                                currentImage.src = '../' + theme.image_url;
                                 currentImage.classList.remove('hidden');
                             }
                         })
                         .catch(error => {
                             console.error('Error:', error);
-                            alert('Error loading category data');
+                            alert('Error loading theme data');
                         });
                 }
 
                 function closeEditModal() {
-                    const modal = document.getElementById('editCategoryModal');
+                    const modal = document.getElementById('editthemeModal');
                     modal.classList.add('hidden');
                     modal.classList.remove('flex');
-                    document.getElementById('editCategoryForm').reset();
+                    document.getElementById('editthemeForm').reset();
                     const currentImage = document.querySelector('#currentImage img');
                     if (currentImage) {
                         currentImage.classList.add('hidden');
@@ -677,7 +677,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                     submitBtn.disabled = true;
                     spinner.classList.remove('hidden');
 
-                    fetch('update_category.php', {
+                    fetch('update_theme.php', {
                         method: 'POST',
                         body: formData
                     })
@@ -700,7 +700,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                 }
 
                 // Close modal when clicking outside
-                document.getElementById('editCategoryModal').addEventListener('click', function (e) {
+                document.getElementById('editthemeModal').addEventListener('click', function (e) {
                     if (e.target === this) {
                         closeEditModal();
                     }

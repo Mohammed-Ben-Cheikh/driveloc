@@ -161,7 +161,7 @@ $themes = Theme::Getthemes($lignes, $page);
                         </div>
                         <div class="relative z-50 p-6 -mt-20">
                             <div class="flex justify-between items-start mb-4">
-                                <h3 class="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors">
+                                <h3 class="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
                                     <?php echo htmlspecialchars($theme['nom']); ?>
                                 </h3>
                                 <span

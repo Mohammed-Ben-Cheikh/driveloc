@@ -7,9 +7,9 @@ if (!isset($_SESSION['user_id']) || !$_SESSION['user_id']) {
 
 // Handle cancellation
 require_once '../../app/controller/articles.php';
+require_once '../../app/controller/users.php';
 require_once '../../app/controller/themes.php';
 
-// Get user's reservations
 $user_id = $_SESSION['user_id'];
 
 // Get all available vehicles and categories
@@ -31,7 +31,7 @@ if ($selectedCategory) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mes Réservations - Drive-Loc</title>
-    <script src="https://cdn.tailwindcss.com/"></script>
+    <script src="http://localhost/Drive-Loc-/tailwindcss.js"></script>
     <link rel="stylesheet" href="../../src/output.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -123,7 +123,7 @@ if ($selectedCategory) {
         </section>
 
 
-        <?php if (empty($reservations)): ?>
+        <?php if (empty($articles)): ?>
             <div class="bg-white/10 backdrop-blur-lg rounded-xl p-8 text-center">
                 <i class="fas fa-calendar-xmark text-4xl text-gray-400 mb-4"></i>
                 <h2 class="text-xl font-semibold text-white mb-2">Aucune réservation</h2>
@@ -136,211 +136,44 @@ if ($selectedCategory) {
         <?php else: ?>
             <div
                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-hidden rounded-[2rem] bg-gradient-to-br from-gray-900 via-gray-800 to-blue-900 backdrop-blur-sm border-4 border-white shadow-2xl p-8 mt-8">
-                <!-- Carte 1 -->
-                <div
-                    class="bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden border border-white/10 hover:shadow-2xl transition-shadow duration-300">
-                    <!-- Image du blog -->
-                    <img src="https://via.placeholder.com/400x200" alt="Image du blog" class="w-full h-48 object-cover">
-
-                    <!-- Contenu de la carte -->
-                    <div class="p-6">
-                        <!-- Titre du blog -->
-                        <h3 class="text-xl font-bold text-white mb-2">Titre du Blog</h3>
-
-                        <!-- Auteur du blog -->
-                        <div class="flex items-center text-gray-400 mb-4">
-                            <i class="fas fa-user-circle mr-2"></i>
-                            <span>Par John Doe</span>
-                        </div>
-
-                        <!-- Description courte -->
-                        <p class="text-gray-300 mb-4">
-                            Ceci est une courte description du blog. Elle donne un aperçu du contenu de l'article.
-                        </p>
-
-                        <!-- Date de publication -->
-                        <div class="flex items-center text-gray-400 mb-4">
-                            <i class="fas fa-calendar-alt mr-2"></i>
-                            <span>12 Octobre 2023</span>
-                        </div>
-
-                        <!-- Bouton "Lire l'article" -->
-                        <a href="#"
-                            class="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                            Lire l'article
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Carte 2 -->
-                <div
-                    class="bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden border border-white/10 hover:shadow-2xl transition-shadow duration-300">
-                    <!-- Image du blog -->
-                    <img src="https://via.placeholder.com/400x200" alt="Image du blog" class="w-full h-48 object-cover">
-
-                    <!-- Contenu de la carte -->
-                    <div class="p-6">
-                        <!-- Titre du blog -->
-                        <h3 class="text-xl font-bold text-white mb-2">Titre du Blog</h3>
-
-                        <!-- Auteur du blog -->
-                        <div class="flex items-center text-gray-400 mb-4">
-                            <i class="fas fa-user-circle mr-2"></i>
-                            <span>Par Jane Smith</span>
-                        </div>
-
-                        <!-- Description courte -->
-                        <p class="text-gray-300 mb-4">
-                            Ceci est une courte description du blog. Elle donne un aperçu du contenu de l'article.
-                        </p>
-
-                        <!-- Date de publication -->
-                        <div class="flex items-center text-gray-400 mb-4">
-                            <i class="fas fa-calendar-alt mr-2"></i>
-                            <span>10 Octobre 2023</span>
-                        </div>
-
-                        <!-- Bouton "Lire l'article" -->
-                        <a href="#"
-                            class="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                            Lire l'article
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Carte 3 -->
-                <div
-                    class="bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden border border-white/10 hover:shadow-2xl transition-shadow duration-300">
-                    <!-- Image du blog -->
-                    <img src="https://via.placeholder.com/400x200" alt="Image du blog" class="w-full h-48 object-cover">
-
-                    <!-- Contenu de la carte -->
-                    <div class="p-6">
-                        <!-- Titre du blog -->
-                        <h3 class="text-xl font-bold text-white mb-2">Titre du Blog</h3>
-
-                        <!-- Auteur du blog -->
-                        <div class="flex items-center text-gray-400 mb-4">
-                            <i class="fas fa-user-circle mr-2"></i>
-                            <span>Par Alex Johnson</span>
-                        </div>
-
-                        <!-- Description courte -->
-                        <p class="text-gray-300 mb-4">
-                            Ceci est une courte description du blog. Elle donne un aperçu du contenu de l'article.
-                        </p>
-
-                        <!-- Date de publication -->
-                        <div class="flex items-center text-gray-400 mb-4">
-                            <i class="fas fa-calendar-alt mr-2"></i>
-                            <span>8 Octobre 2023</span>
-                        </div>
-
-                        <!-- Bouton "Lire l'article" -->
-                        <a href="#"
-                            class="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                            Lire l'article
-                        </a>
-                    </div>
-                </div>
-                <?php foreach ($reservations as $reservation):
-                    $vehicule = Vehicule::getById($reservation['id_vehicule_fk']);
-                    ?>
-                    <div class="bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden border border-white/10">
-                        <!-- Vehicle Image -->
-                        <div class="relative h-48">
-                            <img src="<?php echo $vehicule['image_url']; ?>"
-                                alt="<?php echo $vehicule['marque'] . ' ' . $vehicule['modele']; ?>"
-                                class="w-full h-full object-cover">
-                            <div class="absolute top-4 right-4">
-                                <span
-                                    class="px-4 py-2 rounded-full text-sm font-semibold <?php echo getStatusClass($reservation['statut']); ?>">
-                                    <?php echo getStatusLabel($reservation['statut']); ?>
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Reservation Details -->
+                <?php foreach ($articles as $article):
+                    $user = User::getById($article['id_user_fk']); ?>
+                    <div
+                        class="bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden border border-white/10 hover:shadow-2xl transition-shadow duration-300">
+                        <!-- Image du blog -->
+                        <?php if (!empty($article['image_url'])): ?>
+                            <img src="<?= htmlspecialchars($article['image_url']) ?>" alt="Image du blog"
+                                class="w-full h-48 object-cover">
+                        <?php else: ?>
+                            <img src="https://via.placeholder.com/400x200" alt="Image par défaut" class="w-full h-48 object-cover">
+                        <?php endif; ?>
+                        <!-- Contenu de la carte -->
                         <div class="p-6">
-                            <h3 class="text-xl font-bold text-white mb-2">
-                                <?php echo $vehicule['marque'] . ' ' . $vehicule['modele']; ?>
-                            </h3>
+                            <!-- Titre du blog -->
+                            <h3 class="text-xl font-bold text-white mb-2"><?= htmlspecialchars($article['titre']) ?></h3>
 
-                            <div class="space-y-3 text-gray-300">
-                                <div class="flex items-center">
-                                    <i class="fas fa-calendar-alt w-6"></i>
-                                    <span>Du: <?php echo date('d/m/Y', strtotime($reservation['date_reservation'])); ?></span>
-                                </div>
-                                <div class="flex items-center">
-                                    <i class="fas fa-calendar-check w-6"></i>
-                                    <span>Au: <?php echo date('d/m/Y', strtotime($reservation['date_limite'])); ?></span>
-                                </div>
-                                <div class="flex items-center">
-                                    <i class="fas fa-map-marker-alt w-6"></i>
-                                    <span><?php echo $reservation['lieux']; ?></span>
-                                </div>
-                                <div class="flex items-center">
-                                    <i class="fas fa-money-bill w-6"></i>
-                                    <span><?php echo $vehicule['prix_a_loue']; ?> €/jour</span>
-                                </div>
+                            <!-- Auteur du blog -->
+                            <div class="flex items-center text-gray-400 mb-4">
+                                <i class="fas fa-user-circle mr-2"></i>
+                                <span><?= htmlspecialchars($user['nom'] .' '. $user['prenom']) ?></span>
                             </div>
 
-                            <?php if ($reservation['commentaire']): ?>
-                                <div class="mt-4 p-4 bg-gray-800/50 rounded-lg">
-                                    <p class="text-gray-400 text-sm italic">
-                                        "<?php echo $reservation['commentaire']; ?>"
-                                    </p>
-                                </div>
-                            <?php endif; ?>
+                            <!-- Description courte -->
+                            <p class="text-gray-300 mb-4">
+                                <?= htmlspecialchars($article['description']) ?>
+                            </p>
 
-                            <!-- Status Timeline -->
-                            <div class="mt-6 relative">
-                                <div class="flex justify-between mb-2">
-                                    <?php
-                                    $statuses = ['en attente', 'approuvée', 'terminée'];
-                                    $currentIndex = array_search($reservation['statut'], $statuses);
-
-                                    foreach ($statuses as $index => $status):
-                                        $isActive = $index <= $currentIndex;
-                                        ?>
-                                        <div class="flex flex-col items-center">
-                                            <div
-                                                class="w-6 h-6 rounded-full <?php echo $isActive ? 'bg-blue-500' : 'bg-gray-600'; ?> flex items-center justify-center">
-                                                <i class="fas fa-check text-white text-xs"></i>
-                                            </div>
-                                            <span class="text-xs text-gray-400 mt-1"><?php echo ucfirst($status); ?></span>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                                <div class="absolute top-3 left-0 right-0 h-[2px] bg-gray-600 -z-10">
-                                    <div class="h-full bg-blue-500" style="width: <?php echo ($currentIndex / 2) * 100; ?>%">
-                                    </div>
-                                </div>
+                            <!-- Date de publication -->
+                            <div class="flex items-center text-gray-400 mb-4">
+                                <i class="fas fa-calendar-alt mr-2"></i>
+                                <span><?= htmlspecialchars($article['created_at']) ?></span>
                             </div>
 
-                            <!-- Actions -->
-                            <?php if ($reservation['statut'] === 'en attente' || $reservation['statut'] === 'approuvée'): ?>
-                                <div class="mt-6 flex gap-2">
-                                    <form method="POST" class="w-full"
-                                        onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ?');">
-                                        <input type="hidden" name="id_reservation"
-                                            value="<?php echo $reservation['id_reservation']; ?>">
-                                        <input type="hidden" name="action" value="cancel">
-                                        <button type="submit"
-                                            class="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
-                                            <i class="fas fa-times"></i>
-                                            Annuler
-                                        </button>
-                                    </form>
-                                    <?php if ($reservation['statut'] === 'approuvée'): ?>
-                                        <a href="facture.php?id=<?php echo $reservation['id_reservation']; ?>"
-                                            class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
-                                            <i class="fas fa-file-invoice"></i>
-                                            Facture
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endif; ?>
+                            <!-- Bouton "Lire l'article" -->
+                            <a href="article.php?id=<?= htmlspecialchars($article['id_article']) ?>"
+                                class="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                Lire l'article
+                            </a>
                         </div>
                     </div>
                 <?php endforeach; ?>

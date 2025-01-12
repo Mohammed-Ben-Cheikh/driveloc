@@ -115,6 +115,11 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                     </a>
                 </li>
                 <li class="hover:bg-gray-700">
+                    <a href="themes.php" class="flex items-center px-6 py-3 text-gray-300 hover:text-white">
+                    <i class="fas fa-palette mr-3"></i> themes
+                    </a>
+                </li>
+                <li class="hover:bg-gray-700">
                     <a href="vehicules.php" class="flex items-center px-6 py-3 text-gray-300 hover:text-white">
                         <i class="fas fa-car-side mr-3"></i> Vehicles
                     </a>
@@ -176,7 +181,8 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                                 <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100"><i
                                         class="fas fa-cog mr-2"></i> Settings</a>
                                 <hr class="my-2">
-                                <a href="../../authentification/logout.php" class="block px-4 py-2 text-red-600 hover:bg-gray-100"><i
+                                <a href="../../authentification/logout.php"
+                                    class="block px-4 py-2 text-red-600 hover:bg-gray-100"><i
                                         class="fas fa-sign-out-alt mr-2"></i> Logout</a>
                             </div>
                         </div>
@@ -223,7 +229,9 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                         <div class="flex justify-between items-center">
                             <div>
                                 <p class="text-white/60">Catégorie la + Populaire</p>
-                                <h3 class="text-xl font-bold"><?php echo !empty($mostPopularCategory['nom']) ? htmlspecialchars($mostPopularCategory['nom']) : "Aucune catégorie"; ?></h3>
+                                <h3 class="text-xl font-bold">
+                                    <?php echo !empty($mostPopularCategory['nom']) ? htmlspecialchars($mostPopularCategory['nom']) : "Aucune catégorie"; ?>
+                                </h3>
                             </div>
                             <div class="text-white/80 bg-white/10 p-3 rounded-lg">
                                 <i class="fas fa-star text-2xl"></i>
@@ -608,7 +616,6 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                     if (confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')) {
                         const formData = new FormData();
                         formData.append('id', id);
-
                         fetch('delete_category.php', {
                             method: 'POST',
                             body: formData
@@ -617,7 +624,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                             .then(data => {
                                 if (data.success) {
                                     alert(data.message);
-                                    window.location.reload();
+                                    // window.location.reload();
                                 } else {
                                     throw new Error(data.message);
                                 }

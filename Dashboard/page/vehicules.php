@@ -57,6 +57,11 @@ $stats = StatistiquesManager::getVehicleStats(); // Add this line to get the sta
                         <i class="fas fa-tags mr-3"></i> Categories
                     </a>
                 </li>
+                <li class="hover:bg-gray-700">
+                    <a href="themes.php" class="flex items-center px-6 py-3 text-gray-300 hover:text-white">
+                    <i class="fas fa-palette mr-3"></i> themes
+                    </a>
+                </li>
                 <li class="bg-dark/50 border-l-4 border-purple-600">
                     <a href="vehicules.php" class="flex items-center px-6 py-3 text-gray-300 hover:text-white">
                         <i class="fas fa-car-side mr-3"></i> Vehicles

@@ -33,19 +33,18 @@ class Article
         $sql = "INSERT INTO articles (
             id_user_fk,
             titre,
-            description,
             contenu,
             image_url,
-            id_theme_fk
+            id_theme_fk,description
         ) VALUES (?, ?, ?, ?, ?, ?)";
         $stmt = $db->prepare($sql);
         $stmt->execute([
             $this->id_user_fk,
             $this->titre,
-            $this->description,
             $this->contenu,
             $this->image_url,
             $this->id_theme_fk,
+            $this->description
         ]);
         $database->disconnect();
         return $db->lastInsertId();
@@ -119,6 +118,17 @@ class Article
             $this->id_theme_fk,
             $id_article,
         ]);
+        $database->disconnect();
+        return $result;
+    }
+
+    public static function updateStatut($id, $statut)
+    {
+        $database = new Database();
+        $db = $database->connect();
+        $sql = "UPDATE articles SET statut = ? WHERE id_article = ?";
+        $stmt = $db->prepare($sql);
+        $result = $stmt->execute([$statut, $id]);
         $database->disconnect();
         return $result;
     }

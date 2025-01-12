@@ -60,6 +60,11 @@ $reviews = Review::getAll();
                     </a>
                 </li>
                 <li class="hover:bg-gray-700">
+                    <a href="themes.php" class="flex items-center px-6 py-3 text-gray-300 hover:text-white">
+                    <i class="fas fa-palette mr-3"></i> themes
+                    </a>
+                </li>
+                <li class="hover:bg-gray-700">
                     <a href="vehicules.php" class="flex items-center px-6 py-3 text-gray-300 hover:text-white">
                         <i class="fas fa-car-side mr-3"></i> Vehicles
                     </a>

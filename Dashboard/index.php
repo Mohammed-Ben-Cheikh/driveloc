@@ -52,6 +52,11 @@ if (isset($_SESSION['user_id']) && $_SESSION['user_id']) {
                     </a>
                 </li>
                 <li class="hover:bg-gray-700">
+                    <a href="./page/themes.php" class="flex items-center px-6 py-3 text-gray-300 hover:text-white">
+                    <i class="fas fa-palette mr-3"></i> themes
+                    </a>
+                </li>
+                <li class="hover:bg-gray-700">
                     <a href="./page/vehicules.php" class="flex items-center px-6 py-3 text-gray-300 hover:text-white">
                         <i class="fas fa-car-side mr-3"></i> Vehicles
                     </a>
